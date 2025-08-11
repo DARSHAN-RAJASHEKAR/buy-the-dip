@@ -1,3 +1,4 @@
+import os
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import requests
@@ -5,7 +6,21 @@ from datetime import datetime, timedelta
 import time
 
 app = Flask(__name__)
-CORS(app)
+
+# Production CORS configuration
+if os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('PORT'):
+    # Production on Railway
+    CORS(app, origins=[
+        "https://*.vercel.app",  # Allow all Vercel deployments
+        "https://your-vercel-app.vercel.app",  # Replace with your specific Vercel URL
+        "http://localhost:3000",  # For local development
+        "http://127.0.0.1:5000"   # For local development
+    ])
+    print("🌍 Production CORS enabled for Vercel domains")
+else:
+    # Development
+    CORS(app)
+    print("🔧 Development CORS enabled for all origins")
 
 # Comprehensive stock lists - manually curated and reliable
 def get_nifty_50_stocks():
@@ -1056,7 +1071,7 @@ def scan_stocks():
                 print(f"❌ FAILED: {stock['symbol']} - Yahoo Finance API failed")
             
             # Delay to respect API limits
-            time.sleep(0.8)
+            time.sleep(1)
             
             # Progress update every 10 stocks
             if processed % 10 == 0:
@@ -1127,18 +1142,8 @@ def test_stock(symbol):
     })
 
 if __name__ == '__main__':
-    print("🚀 Starting Clean Stock Scanner v6.0...")
-    print("🧹 SIMPLIFIED & CLEAN - Removed all failing APIs")
-    print("📊 Data Source: Yahoo Finance ONLY (Real market data)")
-    print("📋 Stock Lists: Static curated lists (Reliable)")
-    print("🎯 Universes:")
-    print("   - nifty50: 50 top stocks")
-    print("   - nifty100: 100 top stocks") 
-    print("   - nifty200: 200 top stocks")
-    print("   - nifty500: 500+ stocks")
-    print("✅ Zero external API dependencies for stock lists")
-    print("✅ Only Yahoo Finance for real market data")
-    print("✅ Production ready and reliable")
-    print("🧪 Test endpoint: /test-stock/RELIANCE")
+    port = int(os.environ.get('PORT', 5000))
+    debug = not (os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('PORT'))
+    environment = "Production (Railway)" if (os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('PORT')) else "Development"
     
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=debug, host='0.0.0.0', port=port)
