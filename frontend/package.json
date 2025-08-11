@@ -1,0 +1,12 @@
+{
+  "name": "stock-scanner-frontend",
+  "version": "1.0.0",
+  "description": "Dynamic Stock Scanner Frontend",
+  "main": "index.html",
+  "scripts": {
+    "build": "echo 'Static HTML - no build needed'",
+    "start": "echo 'Static HTML - no start needed'"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

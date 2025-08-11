@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dynamic Stock Universe Scanner</title>
+    <title>NSE Stock Analysis Tool</title>
     <style>
       * {
         margin: 0;
@@ -13,7 +13,7 @@
 
       body {
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        background: linear-gradient(135deg, #1e3c72, #2a5298);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         min-height: 100vh;
         color: #333;
       }
@@ -27,7 +27,7 @@
       .header {
         text-align: center;
         color: white;
-        margin-bottom: 30px;
+        margin-bottom: 20px;
       }
 
       .header h1 {
@@ -39,6 +39,24 @@
       .header p {
         font-size: 1.1rem;
         opacity: 0.9;
+        margin-bottom: 10px;
+      }
+
+      .disclaimer {
+        background: linear-gradient(135deg, #ffc107, #ff8c00);
+        color: #212529;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 25px;
+        text-align: center;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .disclaimer-icon {
+        font-size: 1.2rem;
+        margin-right: 8px;
       }
 
       .api-status {
@@ -112,14 +130,14 @@
       }
 
       .universe-option:hover {
-        border-color: #2a5298;
+        border-color: #667eea;
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(42, 82, 152, 0.15);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
       }
 
       .universe-option.selected {
-        border-color: #2a5298;
-        background: #e7f1ff;
+        border-color: #667eea;
+        background: linear-gradient(135deg, #e8f2ff, #f0f8ff);
       }
 
       .universe-option input[type="radio"] {
@@ -128,7 +146,7 @@
 
       .universe-label {
         font-weight: 600;
-        color: #2a5298;
+        color: #667eea;
         margin-bottom: 5px;
       }
 
@@ -157,17 +175,19 @@
 
       .filter-group input,
       .filter-group select {
-        padding: 10px;
+        padding: 12px;
         border: 2px solid #e0e0e0;
         border-radius: 8px;
         font-size: 14px;
         transition: border-color 0.3s ease;
+        background: white;
       }
 
       .filter-group input:focus,
       .filter-group select:focus {
         outline: none;
-        border-color: #2a5298;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
       }
 
       .scan-button {
@@ -184,15 +204,16 @@
         width: 100%;
       }
 
-      .scan-button:hover {
+      .scan-button:hover:not(:disabled) {
         transform: translateY(-2px);
         box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
       }
 
       .scan-button:disabled {
-        background: #ccc;
+        background: #6c757d;
         cursor: not-allowed;
         transform: none;
+        box-shadow: none;
       }
 
       .results-section {
@@ -212,7 +233,7 @@
         width: 40px;
         height: 40px;
         border: 4px solid #f3f3f3;
-        border-top: 4px solid #2a5298;
+        border-top: 4px solid #667eea;
         border-radius: 50%;
         animation: spin 1s linear infinite;
         margin: 0 auto 20px;
@@ -239,7 +260,7 @@
       .results-count {
         font-size: 1.2rem;
         font-weight: 600;
-        color: #2a5298;
+        color: #667eea;
       }
 
       .scan-stats {
@@ -259,7 +280,7 @@
       .stat-value {
         font-size: 1.5rem;
         font-weight: 700;
-        color: #2a5298;
+        color: #667eea;
       }
 
       .stat-label {
@@ -276,6 +297,12 @@
         border-radius: 8px;
         cursor: pointer;
         font-weight: 600;
+        transition: all 0.3s ease;
+      }
+
+      .export-button:hover {
+        background: #218838;
+        transform: translateY(-1px);
       }
 
       .stock-grid {
@@ -300,7 +327,7 @@
       .stock-symbol {
         font-size: 1.3rem;
         font-weight: 700;
-        color: #2a5298;
+        color: #667eea;
         margin-bottom: 5px;
       }
 
@@ -369,18 +396,43 @@
       }
 
       .no-results h3 {
+        margin-bottom: 15px;
+        color: #667eea;
+        font-size: 1.4rem;
+      }
+
+      .no-results p {
         margin-bottom: 10px;
-        color: #2a5298;
+        line-height: 1.6;
       }
 
       .data-source-info {
-        background: #e7f3ff;
+        background: linear-gradient(135deg, #e3f2fd, #f0f8ff);
         border: 1px solid #b3d9ff;
         border-radius: 8px;
         padding: 15px;
         margin-bottom: 20px;
         font-size: 0.9rem;
         color: #0056b3;
+      }
+
+      .features-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+      }
+
+      .feature-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+      }
+
+      .feature-icon {
+        color: #28a745;
+        font-weight: bold;
       }
 
       @media (max-width: 768px) {
@@ -414,27 +466,57 @@
         .scan-stats {
           grid-template-columns: repeat(2, 1fr);
         }
+
+        .features-list {
+          grid-template-columns: 1fr;
+        }
       }
     </style>
   </head>
   <body>
     <div class="container">
       <div class="header">
-        <h1>🚀 Dynamic Stock Universe Scanner</h1>
-        <p>Free NSE Stock Analysis with Dynamic Universe Selection</p>
+        <h1>📊 NSE Stock Screening Tool</h1>
+        <p>Find Stocks Trading at Lower Prices - Buy the Dip Opportunities</p>
+      </div>
+
+      <div class="disclaimer">
+        <span class="disclaimer-icon">⚠️</span>
+        <strong>DISCLAIMER:</strong> This tool is for educational and personal
+        analysis purposes only. Not financial advice. Please consult with a
+        qualified financial advisor before making investment decisions.
       </div>
 
       <div class="api-status">
         <div class="status-indicator">
           <div class="status-dot" id="statusDot"></div>
-          <span id="statusText">Checking backend connection...</span>
+          <span id="statusText">Connecting to data service...</span>
         </div>
-        <div id="lastUpdated">Never updated</div>
+        <div id="lastUpdated">Ready to scan</div>
       </div>
 
       <div class="data-source-info">
-        <strong>📊 Free Data Sources:</strong> No API keys required - completely
-        FREE dynamic stock universe fetching!
+        <strong>📈 Data Sources:</strong> Real-time market data from Yahoo
+        Finance API - find stocks that have declined for potential buying
+        opportunities.
+        <div class="features-list">
+          <div class="feature-item">
+            <span class="feature-icon">✅</span>
+            <span>Real-time NSE data</span>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">✅</span>
+            <span>No API keys required</span>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">✅</span>
+            <span>Decline-based screening</span>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">✅</span>
+            <span>Export capabilities</span>
+          </div>
+        </div>
       </div>
 
       <div class="scanner-controls">
@@ -449,8 +531,8 @@
                 value="nifty50"
                 checked
               />
-              <div class="universe-label">Top 50</div>
-              <div class="universe-description">Nifty 50 Index</div>
+              <div class="universe-label">Nifty 50</div>
+              <div class="universe-description">Top 50 large-cap stocks</div>
             </label>
             <label class="universe-option" for="nifty100">
               <input
@@ -459,8 +541,8 @@
                 name="stockUniverse"
                 value="nifty100"
               />
-              <div class="universe-label">Top 100</div>
-              <div class="universe-description">Nifty 100 Index</div>
+              <div class="universe-label">Nifty 100</div>
+              <div class="universe-description">Top 100 stocks</div>
             </label>
             <label class="universe-option" for="nifty200">
               <input
@@ -469,8 +551,8 @@
                 name="stockUniverse"
                 value="nifty200"
               />
-              <div class="universe-label">Top 200</div>
-              <div class="universe-description">Nifty 200 Index</div>
+              <div class="universe-label">Nifty 200</div>
+              <div class="universe-description">Comprehensive analysis</div>
             </label>
             <label class="universe-option" for="nifty500">
               <input
@@ -479,8 +561,8 @@
                 name="stockUniverse"
                 value="nifty500"
               />
-              <div class="universe-label">Top 500</div>
-              <div class="universe-description">By Market Cap</div>
+              <div class="universe-label">Extended Universe</div>
+              <div class="universe-description">400+ stocks</div>
             </label>
           </div>
         </div>
@@ -495,6 +577,7 @@
               min="0"
               max="50"
               step="0.1"
+              placeholder="e.g., 5.0"
             />
           </div>
           <div class="filter-group">
@@ -506,45 +589,45 @@
               min="0"
               max="50"
               step="0.1"
+              placeholder="e.g., 10.0"
             />
           </div>
           <div class="filter-group">
             <label>Market Cap Filter</label>
             <select id="marketCapFilter">
-              <option value="all">All Caps</option>
+              <option value="all">All Market Caps</option>
               <option value="large">Large Cap Only</option>
               <option value="mid">Mid Cap Only</option>
+              <option value="small">Small Cap Only</option>
             </select>
           </div>
           <div class="filter-group">
             <label>Sector Filter</label>
             <select id="sectorFilter">
               <option value="all">All Sectors</option>
-              <option value="banking">Banking</option>
+              <option value="banking">Banking & Finance</option>
               <option value="it">Information Technology</option>
-              <option value="pharma">Pharmaceuticals</option>
+              <option value="healthcare">Healthcare & Pharma</option>
               <option value="auto">Automotive</option>
-              <option value="fmcg">FMCG</option>
-              <option value="energy">Energy</option>
-              <option value="metals">Metals</option>
-              <option value="cement">Cement</option>
+              <option value="fmcg">FMCG & Consumer</option>
+              <option value="energy">Energy & Power</option>
+              <option value="metals">Metals & Mining</option>
+              <option value="cement">Cement & Construction</option>
             </select>
           </div>
         </div>
 
         <button class="scan-button" onclick="scanStocks()">
-          <span id="buttonText">🔍 Scan Dynamic Universe</span>
+          <span id="buttonText">🔍 Find Dip Opportunities</span>
         </button>
       </div>
 
       <div class="results-section">
         <div id="loadingDiv" class="loading" style="display: none">
           <div class="spinner"></div>
-          <p id="loadingText">
-            Fetching dynamic stock universe and real market data...
-          </p>
+          <p id="loadingText">Scanning for stocks trading at lower prices...</p>
           <p style="margin-top: 10px; font-size: 0.9rem">
-            This may take 1-3 minutes depending on universe size...
+            Finding potential buying opportunities...
           </p>
         </div>
 
@@ -552,7 +635,7 @@
           <div class="results-header">
             <div class="results-count" id="resultsCount">0 stocks found</div>
             <button class="export-button" onclick="exportResults()">
-              📊 Export CSV
+              📊 Export Results
             </button>
           </div>
 
@@ -564,63 +647,74 @@
         </div>
 
         <div id="errorDiv" class="error-message" style="display: none">
-          <h3>⚠️ Backend Connection Error</h3>
-          <p id="errorText">Unable to connect to Python backend.</p>
+          <h3>⚠️ Connection Error</h3>
+          <p id="errorText">Unable to connect to data service.</p>
           <p style="margin-top: 10px">
-            Make sure the Python server is running on port 5000.
+            Please check your internet connection and try again.
           </p>
         </div>
 
         <div id="noResultsDiv" class="no-results" style="display: none">
-          <h3>🎉 No Stocks Found</h3>
+          <h3>🎯 No Declining Stocks Found</h3>
           <p>No stocks in the selected universe meet your decline criteria.</p>
-          <p>Try adjusting the thresholds or selecting a different universe.</p>
+          <p>Try lowering the thresholds to find more buying opportunities.</p>
         </div>
 
         <div id="initialMessage" class="no-results">
-          <h3>🚀 Ready to Scan Dynamic Universe</h3>
+          <h3>🚀 Stock Screening Ready</h3>
           <p>
-            Select your preferred stock universe and click "Scan Dynamic
-            Universe"
+            Set your decline thresholds above and click "Find Dip Opportunities"
+            to start
           </p>
-          <p style="margin-top: 10px; font-size: 0.9rem">
-            ✅ <strong>Free Data Sources:</strong> NSE Official API,
-            Screener.in, MoneyControl<br />
-            ✅ <strong>Real Data Only:</strong> No simulation or fake data<br />
-            ✅ <strong>Dynamic Universe:</strong> Choose from 50 to 500 top
-            stocks
-          </p>
+          <div class="features-list">
+            <div class="feature-item">
+              <span class="feature-icon">📉</span>
+              <span>Find stocks at lower prices</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">🎯</span>
+              <span>Customizable decline filters</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">📈</span>
+              <span>Real-time market data</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">💾</span>
+              <span>Export potential opportunities</span>
+            </div>
+          </div>
         </div>
-      </div>
-
-      <div
-        style="
-          background: #fff3cd;
-          border: 1px solid #ffeaa7;
-          border-radius: 8px;
-          padding: 15px;
-          margin-top: 20px;
-          font-size: 0.9rem;
-          color: #856404;
-        "
-      >
-        <strong> Notice:</strong> This scanner manually added stock lists from
-        NSE official and financial websites. Stock universe is updated in
-        real-time for the most current market data. All data sources are
-        completely FREE.
       </div>
     </div>
 
     <script>
-      const API_BASE = "http://127.0.0.1:5000";
+      // Dynamic API configuration for production deployment
+      const getApiBase = () => {
+        const hostname = window.location.hostname;
+
+        // Check if we're running locally
+        if (hostname === "localhost" || hostname === "127.0.0.1") {
+          console.log("🔧 Development mode detected");
+          return "http://127.0.0.1:5000";
+        }
+
+        // Production deployment
+        console.log("🌍 Production mode detected");
+        // TODO: Replace with your actual backend URL
+        return "https://your-backend-url.com";
+      };
+
+      const API_BASE = getApiBase();
       let scanResults = [];
 
-      // Universe option selection
+      // Initialize application
       document.addEventListener("DOMContentLoaded", function () {
+        console.log("🚀 NSE Stock Screening Tool Loaded");
+        console.log("🔌 API Base URL:", API_BASE);
+
+        // Universe option selection
         const universeOptions = document.querySelectorAll(".universe-option");
-        const radioButtons = document.querySelectorAll(
-          'input[name="stockUniverse"]'
-        );
 
         universeOptions.forEach((option) => {
           option.addEventListener("click", function () {
@@ -644,18 +738,32 @@
 
       async function checkBackendConnection() {
         try {
-          const response = await fetch(`${API_BASE}/health`);
+          console.log("🔍 Checking data service connection...");
+          const response = await fetch(`${API_BASE}/health`, {
+            method: "GET",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+
           const data = await response.json();
 
           if (data.status === "healthy") {
-            updateStatus(true, `Backend connected - v${data.version}`);
+            updateStatus(
+              true,
+              `Data service connected - v${data.version || "1.0"}`
+            );
+            console.log("✅ Backend health check passed:", data);
             return true;
           }
         } catch (error) {
-          updateStatus(
-            false,
-            "Backend not running - please start Python server"
-          );
+          console.error("❌ Backend connection failed:", error);
+          updateStatus(false, `Data service unavailable`);
           return false;
         }
       }
@@ -700,13 +808,13 @@
 
           // Update loading text based on universe
           const universeLabels = {
-            nifty50: "Top 50 (Nifty 50)",
-            nifty100: "Top 100 (Nifty 100)",
-            nifty200: "Top 200 (Nifty 200)",
-            nifty500: "Top 500 (Nifty 500)",
+            nifty50: "Nifty 50",
+            nifty100: "Nifty 100",
+            nifty200: "Nifty 200",
+            nifty500: "Extended Universe (500+ stocks)",
           };
 
-          loadingText.textContent = `Fetching ${universeLabels[selectedUniverse]} universe and analyzing real market data...`;
+          loadingText.textContent = `Scanning ${universeLabels[selectedUniverse]} for declining stocks...`;
 
           const criteria = {
             weeklyThreshold: parseFloat(
@@ -720,19 +828,26 @@
             stockUniverse: selectedUniverse,
           };
 
+          console.log("🔍 Scanning for dip opportunities:", criteria);
+
           const response = await fetch(`${API_BASE}/scan`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              Accept: "application/json",
             },
             body: JSON.stringify(criteria),
           });
 
           if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(
+              `Screening failed! Status: ${response.status} - ${response.statusText}`
+            );
           }
 
           const data = await response.json();
+          console.log("✅ Screening completed:", data);
+
           scanResults = data.results;
 
           loadingDiv.style.display = "none";
@@ -747,15 +862,15 @@
             "lastUpdated"
           ).textContent = `Last updated: ${new Date().toLocaleString()}`;
         } catch (error) {
-          console.error("Error scanning stocks:", error);
+          console.error("❌ Screening error:", error);
           loadingDiv.style.display = "none";
           errorDiv.style.display = "block";
           document.getElementById(
             "errorText"
-          ).textContent = `Error: ${error.message}. Make sure Python backend is running on port 5000.`;
+          ).textContent = `Screening Error: ${error.message}`;
         } finally {
           button.disabled = false;
-          buttonText.textContent = "🔍 Scan Dynamic Universe";
+          buttonText.textContent = "🔍 Find Dip Opportunities";
         }
       }
 
@@ -766,14 +881,14 @@
         const stockGrid = document.getElementById("stockGrid");
 
         // Update results count
-        resultsCount.textContent = `${results.length} stocks found matching criteria`;
+        resultsCount.textContent = `${results.length} declining stocks found`;
 
         // Create scan statistics
         const universeLabels = {
           nifty50: "Nifty 50",
           nifty100: "Nifty 100",
           nifty200: "Nifty 200",
-          nifty500: "Nifty 500",
+          nifty500: "Extended Universe",
         };
 
         scanStats.innerHTML = `
@@ -785,20 +900,28 @@
                     <div class="stat-label">Universe</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-value">${scanData.universe_size}</div>
-                    <div class="stat-label">Total Stocks</div>
+                    <div class="stat-value">${
+                      scanData.universe_size || "N/A"
+                    }</div>
+                    <div class="stat-label">Total Scanned</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-value">${scanData.real_data_count}</div>
-                    <div class="stat-label">Real Data</div>
+                    <div class="stat-value">${
+                      scanData.yahoo_finance_success ||
+                      scanData.real_data_count ||
+                      "N/A"
+                    }</div>
+                    <div class="stat-label">Data Points</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-value">${scanData.success_rate}</div>
+                    <div class="stat-value">${
+                      scanData.success_rate || "N/A"
+                    }</div>
                     <div class="stat-label">Success Rate</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-value">${results.length}</div>
-                    <div class="stat-label">Matches</div>
+                    <div class="stat-label">Dip Opportunities</div>
                 </div>
             `;
 
@@ -818,15 +941,15 @@
 
         // Source label mapping
         const sourceLabels = {
+          yahoo_finance: "Yahoo Finance",
           nse_official: "NSE Official",
           screener_scrape: "Screener.in",
           moneycontrol_scrape: "MoneyControl",
-          yahoo_direct_api: "Yahoo Finance",
           fallback_static: "Static List",
         };
 
         const sourceLabel =
-          sourceLabels[stock.source] || stock.source || "Unknown";
+          sourceLabels[stock.source] || stock.source || "Yahoo Finance";
 
         return `
                 <div class="stock-card">
@@ -838,7 +961,7 @@
                     <div class="stock-source">${sourceLabel}</div>
                     <div class="stock-metrics">
                         <div class="metric">
-                            <div class="metric-label">Current Price (${today})</div>
+                            <div class="metric-label">Current Price</div>
                             <div class="metric-value">₹${
                               stock.currentPrice
                             }</div>
@@ -848,11 +971,11 @@
                             <div class="metric-value">${
                               typeof stock.volume === "number"
                                 ? stock.volume.toLocaleString()
-                                : stock.volume
+                                : stock.volume || "N/A"
                             }</div>
                         </div>
                         <div class="metric">
-                            <div class="metric-label">Weekly Change (${oneWeekAgo} to ${today})</div>
+                            <div class="metric-label">Weekly Change</div>
                             <div class="metric-value ${
                               parseFloat(stock.weeklyChange) < 0
                                 ? "negative"
@@ -860,7 +983,7 @@
                             }">${stock.weeklyChange}%</div>
                         </div>
                         <div class="metric">
-                            <div class="metric-label">Monthly Change (${oneMonthAgo} to ${today})</div>
+                            <div class="metric-label">Monthly Change</div>
                             <div class="metric-value ${
                               parseFloat(stock.monthlyChange) < 0
                                 ? "negative"
@@ -868,13 +991,13 @@
                             }">${stock.monthlyChange}%</div>
                         </div>
                         <div class="metric">
-                            <div class="metric-label">Price Week Ago</div>
+                            <div class="metric-label">Price (1 Week Ago)</div>
                             <div class="metric-value">₹${
                               stock.priceOneWeekAgo
                             }</div>
                         </div>
                         <div class="metric">
-                            <div class="metric-label">Price Month Ago</div>
+                            <div class="metric-label">Price (1 Month Ago)</div>
                             <div class="metric-value">₹${
                               stock.priceOneMonthAgo
                             }</div>
@@ -889,17 +1012,18 @@
 
         const headers = [
           "Symbol",
-          "Name",
-          "Current Price",
-          "Weekly Change %",
-          "Monthly Change %",
-          "Price Week Ago",
-          "Price Month Ago",
+          "Company Name",
+          "Current Price (₹)",
+          "Weekly Change (%)",
+          "Monthly Change (%)",
+          "Price 1 Week Ago (₹)",
+          "Price 1 Month Ago (₹)",
           "Volume",
           "Sector",
           "Market Cap",
           "Data Source",
         ];
+
         const csvContent = [
           headers.join(","),
           ...scanResults.map((stock) =>
@@ -913,10 +1037,10 @@
               stock.priceOneMonthAgo,
               typeof stock.volume === "number"
                 ? stock.volume
-                : `"${stock.volume}"`,
-              stock.sector,
-              stock.marketCap,
-              stock.source || "unknown",
+                : `"${stock.volume || "N/A"}"`,
+              stock.sector || "unknown",
+              stock.marketCap || "unknown",
+              stock.source || "yahoo_finance",
             ].join(",")
           ),
         ].join("\n");
@@ -925,7 +1049,7 @@
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `dynamic_stock_scan_${
+        a.download = `nse_dip_opportunities_${
           new Date().toISOString().split("T")[0]
         }.csv`;
         document.body.appendChild(a);
@@ -933,6 +1057,16 @@
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
       }
+
+      // Performance monitoring
+      console.log("📊 NSE Stock Screening Tool Ready");
+      console.log("🔌 API Configuration:", {
+        base: API_BASE,
+        environment:
+          window.location.hostname === "localhost"
+            ? "Development"
+            : "Production",
+      });
     </script>
   </body>
 </html>
