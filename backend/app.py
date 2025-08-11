@@ -12,7 +12,7 @@ if os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('PORT'):
     # Production on Railway
     CORS(app, origins=[
         "https://*.vercel.app",  # Allow all Vercel deployments
-        "https://your-vercel-app.vercel.app",  # Replace with your specific Vercel URL
+        "https://buy-the-dip-beige.vercel.app",  # Replace with your specific Vercel URL
         "http://localhost:3000",  # For local development
         "http://127.0.0.1:5000"   # For local development
     ])
