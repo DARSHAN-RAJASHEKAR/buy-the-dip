@@ -10,12 +10,16 @@ app = Flask(__name__)
 # Production CORS configuration
 if os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('PORT'):
     # Production on Railway
-    CORS(app, origins=[
-        "https://*.vercel.app",  # Allow all Vercel deployments
-        "https://buy-the-dip-beige.vercel.app",  # Replace with your specific Vercel URL
-        "http://localhost:3000",  # For local development
-        "http://127.0.0.1:5000"   # For local development
-    ])
+    CORS(app, 
+         origins=[
+             "https://buy-the-dip-beige.vercel.app",
+             "https://*.vercel.app",
+             "http://localhost:3000",
+             "http://127.0.0.1:5000"
+         ],
+         methods=["GET", "POST", "OPTIONS"],
+         allow_headers=["Content-Type", "Authorization"]
+    )
     print("🌍 Production CORS enabled for Vercel domains")
 else:
     # Development
