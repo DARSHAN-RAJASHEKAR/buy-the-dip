@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NSE Stock Analysis Tool</title>
+    <title>Indian Stock Analysis Tool</title>
     <style>
       * {
         margin: 0;
@@ -11,133 +12,233 @@
         box-sizing: border-box;
       }
 
+      :root {
+        --primary-color: #1e3a8a;
+        --secondary-color: #3b82f6;
+        --accent-color: #10b981;
+        --danger-color: #ef4444;
+        --warning-color: #f59e0b;
+        --dark-bg: #0f172a;
+        --light-bg: #1e293b;
+        --card-bg: #ffffff;
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --border-color: #e2e8f0;
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+        --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.15);
+      }
+
       body {
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
         min-height: 100vh;
-        color: #333;
+        color: var(--text-primary);
+        position: relative;
+      }
+
+      body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: 
+          radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+          radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+        pointer-events: none;
+        z-index: 1;
       }
 
       .container {
-        max-width: 1400px;
+        max-width: 1440px;
         margin: 0 auto;
         padding: 20px;
+        position: relative;
+        z-index: 2;
       }
 
+      /* Header Section */
       .header {
         text-align: center;
         color: white;
-        margin-bottom: 20px;
+        margin-bottom: 30px;
+        padding: 40px 20px;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
       }
 
       .header h1 {
-        font-size: 2.5rem;
-        margin-bottom: 10px;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 15px;
+        background: linear-gradient(135deg, #60a5fa, #34d399);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+      }
+
+      /* This is the corrected style for the emoji */
+      .header h1 .emoji-icon {
+          background: none;
+          -webkit-text-fill-color: initial;
+          -webkit-background-clip: initial;
+          background-clip: initial;
       }
 
       .header p {
-        font-size: 1.1rem;
-        opacity: 0.9;
-        margin-bottom: 10px;
+        font-size: 1.2rem;
+        color: #cbd5e1;
+        font-weight: 300;
       }
 
+      /* Disclaimer */
       .disclaimer {
-        background: linear-gradient(135deg, #ffc107, #ff8c00);
-        color: #212529;
-        border-radius: 10px;
-        padding: 15px;
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.9), rgba(239, 68, 68, 0.9));
+        color: white;
+        border-radius: 15px;
+        padding: 18px;
         margin-bottom: 25px;
         text-align: center;
         font-weight: 600;
-        box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
-        border: 2px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 20px rgba(245, 158, 11, 0.25);
+        backdrop-filter: blur(10px);
+        animation: pulse-warning 3s ease-in-out infinite;
+      }
+
+      @keyframes pulse-warning {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.01); }
       }
 
       .disclaimer-icon {
-        font-size: 1.2rem;
-        margin-right: 8px;
+        font-size: 1.3rem;
+        margin-right: 10px;
+        animation: bounce 2s ease-in-out infinite;
       }
 
+      @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-3px); }
+      }
+
+      /* API Status Card */
       .api-status {
-        background: white;
-        border-radius: 10px;
-        padding: 15px;
-        margin-bottom: 20px;
+        background: var(--card-bg);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 25px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+      }
+
+      .api-status:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-xl);
       }
 
       .status-indicator {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
       }
 
       .status-dot {
         width: 12px;
         height: 12px;
         border-radius: 50%;
-        background: #dc3545;
+        background: var(--danger-color);
+        animation: pulse-status 2s ease-in-out infinite;
       }
 
       .status-dot.connected {
-        background: #28a745;
+        background: var(--accent-color);
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
       }
 
+      @keyframes pulse-status {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
+      }
+
+      /* Scanner Controls */
       .scanner-controls {
-        background: white;
+        background: var(--card-bg);
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--border-color);
+      }
+
+      /* Universe Selection */
+      .universe-selection {
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
         border-radius: 15px;
         padding: 25px;
         margin-bottom: 30px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-      }
-
-      .universe-selection {
-        background: #f8f9fa;
-        border-radius: 10px;
-        padding: 20px;
-        margin-bottom: 25px;
-        border: 2px solid #e9ecef;
+        border: 2px solid #e2e8f0;
       }
 
       .universe-title {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #495057;
-        margin-bottom: 15px;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 20px;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
       }
 
       .universe-options {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 20px;
       }
 
       .universe-option {
         background: white;
-        border: 2px solid #dee2e6;
-        border-radius: 8px;
-        padding: 15px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 20px;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .universe-option::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+        opacity: 0;
+        transition: opacity 0.3s ease;
       }
 
       .universe-option:hover {
-        border-color: #667eea;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
+        border-color: var(--secondary-color);
       }
 
       .universe-option.selected {
-        border-color: #667eea;
-        background: linear-gradient(135deg, #e8f2ff, #f0f8ff);
+        border-color: var(--secondary-color);
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(16, 185, 129, 0.05));
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
       }
 
       .universe-option input[type="radio"] {
@@ -145,21 +246,27 @@
       }
 
       .universe-label {
-        font-weight: 600;
-        color: #667eea;
-        margin-bottom: 5px;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 8px;
+        font-size: 1.1rem;
+        position: relative;
+        z-index: 1;
       }
 
       .universe-description {
         font-size: 0.9rem;
-        color: #6c757d;
+        color: var(--text-secondary);
+        position: relative;
+        z-index: 1;
       }
 
+      /* Filters */
       .filters {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 20px;
-        margin-bottom: 20px;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 25px;
+        margin-bottom: 25px;
       }
 
       .filter-group {
@@ -169,275 +276,372 @@
 
       .filter-group label {
         font-weight: 600;
-        margin-bottom: 8px;
-        color: #555;
+        margin-bottom: 10px;
+        color: var(--text-primary);
+        font-size: 0.95rem;
       }
 
       .filter-group input,
       .filter-group select {
-        padding: 12px;
-        border: 2px solid #e0e0e0;
-        border-radius: 8px;
-        font-size: 14px;
-        transition: border-color 0.3s ease;
+        padding: 14px;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 15px;
+        transition: all 0.3s ease;
         background: white;
       }
 
       .filter-group input:focus,
       .filter-group select:focus {
         outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        border-color: var(--secondary-color);
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        transform: translateY(-1px);
       }
 
+      /* Scan Button */
       .scan-button {
-        background: linear-gradient(135deg, #667eea, #764ba2);
+        background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
         color: white;
         border: none;
-        padding: 15px 40px;
-        border-radius: 10px;
-        font-size: 16px;
-        font-weight: 600;
+        padding: 18px 45px;
+        border-radius: 12px;
+        font-size: 17px;
+        font-weight: 700;
         cursor: pointer;
-        transition: all 0.3s ease;
-        margin-top: 20px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-top: 25px;
         width: 100%;
+        position: relative;
+        overflow: hidden;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .scan-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.6s ease;
+      }
+
+      .scan-button:hover:not(:disabled)::before {
+        left: 100%;
       }
 
       .scan-button:hover:not(:disabled) {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(59, 130, 246, 0.35);
+      }
+
+      .scan-button:active:not(:disabled) {
+        transform: translateY(-1px);
       }
 
       .scan-button:disabled {
-        background: #6c757d;
+        background: linear-gradient(135deg, #94a3b8, #64748b);
         cursor: not-allowed;
         transform: none;
         box-shadow: none;
       }
 
+      /* Results Section */
       .results-section {
-        background: white;
-        border-radius: 15px;
-        padding: 25px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        background: var(--card-bg);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--border-color);
       }
 
+      /* Loading State */
       .loading {
         text-align: center;
-        padding: 40px;
-        color: #666;
+        padding: 60px;
+        color: var(--text-secondary);
       }
 
       .spinner {
-        width: 40px;
-        height: 40px;
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid #667eea;
+        width: 50px;
+        height: 50px;
+        border: 4px solid #e2e8f0;
+        border-top: 4px solid var(--secondary-color);
         border-radius: 50%;
         animation: spin 1s linear infinite;
-        margin: 0 auto 20px;
+        margin: 0 auto 25px;
       }
 
       @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
       }
 
+      /* Results Header */
       .results-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 20px;
-        padding-bottom: 15px;
-        border-bottom: 2px solid #f0f0f0;
+        margin-bottom: 25px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #f1f5f9;
       }
 
       .results-count {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #667eea;
+        font-size: 1.4rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
       }
 
+      /* Scan Stats */
       .scan-stats {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 15px;
-        margin-bottom: 20px;
-        padding: 15px;
-        background: #f8f9fa;
-        border-radius: 8px;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+        padding: 20px;
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        border-radius: 12px;
       }
 
       .stat-item {
         text-align: center;
+        padding: 15px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.3s ease;
+      }
+
+      .stat-item:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-md);
       }
 
       .stat-value {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #667eea;
+        font-size: 1.8rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
       }
 
       .stat-label {
-        font-size: 0.9rem;
-        color: #6c757d;
-        margin-top: 5px;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin-top: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
 
+      /* Export Button */
       .export-button {
-        background: #28a745;
+        background: linear-gradient(135deg, var(--accent-color), #059669);
         color: white;
         border: none;
-        padding: 10px 20px;
-        border-radius: 8px;
+        padding: 12px 25px;
+        border-radius: 10px;
         cursor: pointer;
         font-weight: 600;
         transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
 
       .export-button:hover {
-        background: #218838;
-        transform: translateY(-1px);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
       }
 
+      /* Stock Cards */
       .stock-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-        gap: 20px;
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        gap: 25px;
       }
 
       .stock-card {
-        background: #f8f9fa;
-        border-radius: 12px;
-        padding: 20px;
-        border-left: 5px solid #dc3545;
-        transition: all 0.3s ease;
+        background: linear-gradient(135deg, #ffffff, #f8fafc);
+        border-radius: 16px;
+        padding: 25px;
+        border-left: 5px solid;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: var(--shadow-md);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .stock-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--danger-color), var(--warning-color));
       }
 
       .stock-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
       }
 
       .stock-symbol {
-        font-size: 1.3rem;
-        font-weight: 700;
-        color: #667eea;
-        margin-bottom: 5px;
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--primary-color);
+        margin-bottom: 8px;
       }
 
       .stock-name {
-        font-size: 0.9rem;
-        color: #666;
-        margin-bottom: 15px;
+        font-size: 0.95rem;
+        color: var(--text-secondary);
+        margin-bottom: 18px;
       }
 
       .stock-source {
-        font-size: 0.8rem;
-        color: #28a745;
-        background: #d4edda;
-        padding: 2px 8px;
-        border-radius: 4px;
+        font-size: 0.85rem;
+        color: white;
+        background: linear-gradient(135deg, var(--accent-color), #059669);
+        padding: 4px 12px;
+        border-radius: 20px;
         display: inline-block;
-        margin-bottom: 10px;
+        margin-bottom: 15px;
+        font-weight: 600;
       }
 
       .stock-metrics {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 8px;
+        gap: 12px;
       }
 
       .metric {
         text-align: center;
-        padding: 8px;
+        padding: 12px;
         background: white;
-        border-radius: 6px;
+        border-radius: 10px;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.2s ease;
+      }
+
+      .metric:hover {
+        transform: scale(1.05);
+        box-shadow: var(--shadow-md);
       }
 
       .metric-label {
-        font-size: 0.75rem;
-        color: #666;
-        margin-bottom: 5px;
-        line-height: 1.2;
-      }
-
-      .metric-value {
-        font-size: 1rem;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
         font-weight: 600;
       }
 
+      .metric-value {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text-primary);
+      }
+
       .metric-value.negative {
-        color: #dc3545;
+        color: var(--danger-color);
       }
 
       .metric-value.positive {
-        color: #28a745;
+        color: var(--accent-color);
       }
 
+      /* Error Message */
       .error-message {
-        background: #f8d7da;
-        border: 1px solid #f5c6cb;
-        color: #721c24;
-        padding: 15px;
-        border-radius: 8px;
-        margin: 20px 0;
+        background: linear-gradient(135deg, #fef2f2, #fee2e2);
+        border: 2px solid #fecaca;
+        color: #991b1b;
+        padding: 20px;
+        border-radius: 12px;
+        margin: 25px 0;
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.1);
       }
 
+      .error-message h3 {
+        margin-bottom: 10px;
+        font-size: 1.2rem;
+      }
+
+      /* No Results */
       .no-results {
         text-align: center;
-        padding: 60px 20px;
-        color: #666;
+        padding: 80px 20px;
+        color: var(--text-secondary);
       }
 
       .no-results h3 {
-        margin-bottom: 15px;
-        color: #667eea;
-        font-size: 1.4rem;
+        margin-bottom: 20px;
+        color: var(--primary-color);
+        font-size: 1.6rem;
+        font-weight: 700;
       }
 
       .no-results p {
-        margin-bottom: 10px;
-        line-height: 1.6;
+        margin-bottom: 12px;
+        line-height: 1.7;
+        font-size: 1.05rem;
       }
 
+      /* Data Source Info */
       .data-source-info {
-        background: linear-gradient(135deg, #e3f2fd, #f0f8ff);
-        border: 1px solid #b3d9ff;
-        border-radius: 8px;
-        padding: 15px;
-        margin-bottom: 20px;
-        font-size: 0.9rem;
-        color: #0056b3;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(16, 185, 129, 0.05));
+        border: 2px solid rgba(59, 130, 246, 0.2);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 25px;
+        font-size: 0.95rem;
+        color: var(--primary-color);
+        backdrop-filter: blur(5px);
       }
 
       .features-list {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
-        margin-top: 15px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 18px;
+        margin-top: 20px;
       }
 
       .feature-item {
         display: flex;
         align-items: center;
-        gap: 8px;
-        font-size: 0.9rem;
+        gap: 10px;
+        font-size: 0.95rem;
+        padding: 10px;
+        background: white;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+      }
+
+      .feature-item:hover {
+        transform: translateX(5px);
+        box-shadow: var(--shadow-md);
       }
 
       .feature-icon {
-        color: #28a745;
+        color: var(--accent-color);
         font-weight: bold;
+        font-size: 1.2rem;
       }
 
+      /* Responsive Design */
       @media (max-width: 768px) {
         .header h1 {
-          font-size: 2rem;
+          font-size: 2.2rem;
         }
 
         .universe-options {
@@ -454,13 +658,13 @@
 
         .api-status {
           flex-direction: column;
-          gap: 10px;
+          gap: 15px;
           text-align: center;
         }
 
         .results-header {
           flex-direction: column;
-          gap: 15px;
+          gap: 20px;
         }
 
         .scan-stats {
@@ -471,57 +675,69 @@
           grid-template-columns: 1fr;
         }
       }
+
+      /* Loading dots animation */
+      .loading-dots::after {
+        content: '';
+        animation: dots 1.5s infinite;
+      }
+
+      @keyframes dots {
+        0%, 20% { content: '.'; }
+        40% { content: '..'; }
+        60%, 100% { content: '...'; }
+      }
     </style>
   </head>
   <body>
     <div class="container">
       <div class="header">
-        <h1>📊 NSE Stock Screening Tool</h1>
-        <p>Find Stocks Trading at Lower Prices - Buy the Dip Opportunities</p>
+        <h1>
+        <span class="emoji-icon">📊</span>
+        Stock Screening Tool
+        </h1>
+        <p>Market Scanner - Find Buying Opportunities</p>
       </div>
 
       <div class="disclaimer">
         <span class="disclaimer-icon">⚠️</span>
-        <strong>DISCLAIMER:</strong> This tool is for educational and personal
-        analysis purposes only. Not financial advice. Please consult with a
-        qualified financial advisor before making investment decisions.
+        <strong>IMPORTANT DISCLAIMER:</strong> This tool is for educational and research purposes only. 
+        Not financial advice. Always consult qualified financial advisors before making investment decisions.
       </div>
 
       <div class="api-status">
         <div class="status-indicator">
           <div class="status-dot" id="statusDot"></div>
-          <span id="statusText">Connecting to data service...</span>
+          <span id="statusText">Connecting to market data service...</span>
         </div>
-        <div id="lastUpdated">Ready to scan</div>
+        <div id="lastUpdated">System ready</div>
       </div>
 
       <div class="data-source-info">
-        <strong>📈 Data Sources:</strong> Real-time market data from Yahoo
-        Finance API - find stocks that have declined for potential buying
-        opportunities.
+        <strong>🚀 Trading Scanner</strong> - Real-time market analysis powered by Yahoo Finance API
         <div class="features-list">
           <div class="feature-item">
             <span class="feature-icon">✅</span>
-            <span>Real-time NSE data</span>
+            <span>Live Indian Market Data</span>
           </div>
           <div class="feature-item">
             <span class="feature-icon">✅</span>
-            <span>No API keys required</span>
+            <span>Screening Filters</span>
           </div>
           <div class="feature-item">
             <span class="feature-icon">✅</span>
-            <span>Decline-based screening</span>
+            <span>Multi-Stock Support</span>
           </div>
           <div class="feature-item">
             <span class="feature-icon">✅</span>
-            <span>Export capabilities</span>
+            <span>Export Tools</span>
           </div>
         </div>
       </div>
 
       <div class="scanner-controls">
         <div class="universe-selection">
-          <div class="universe-title">🎯 Select Stock Universe</div>
+          <div class="universe-title">🎯 Select Stock List</div>
           <div class="universe-options">
             <label class="universe-option selected" for="nifty50">
               <input
@@ -531,8 +747,8 @@
                 value="nifty50"
                 checked
               />
-              <div class="universe-label">Nifty 50</div>
-              <div class="universe-description">Top 50 large-cap stocks</div>
+              <div class="universe-label">NIFTY 50</div>
+              <div class="universe-description">Top 50 Large-Cap Stocks</div>
             </label>
             <label class="universe-option" for="nifty100">
               <input
@@ -541,8 +757,8 @@
                 name="stockUniverse"
                 value="nifty100"
               />
-              <div class="universe-label">Nifty 100</div>
-              <div class="universe-description">Top 100 stocks</div>
+              <div class="universe-label">NIFTY 100</div>
+              <div class="universe-description">Top 100 market leaders</div>
             </label>
             <label class="universe-option" for="nifty200">
               <input
@@ -551,8 +767,8 @@
                 name="stockUniverse"
                 value="nifty200"
               />
-              <div class="universe-label">Nifty 200</div>
-              <div class="universe-description">Comprehensive analysis</div>
+              <div class="universe-label">NIFTY 200</div>
+              <div class="universe-description"> Top 200 Broad market coverage</div>
             </label>
             <label class="universe-option" for="nifty500">
               <input
@@ -561,39 +777,43 @@
                 name="stockUniverse"
                 value="nifty500"
               />
-              <div class="universe-label">Extended Universe</div>
-              <div class="universe-description">400+ stocks</div>
+              <div class="universe-label">Extended Stocks</div>
+              <div class="universe-description">Top 400+ stocks coverage</div>
             </label>
           </div>
         </div>
 
         <div class="filters">
           <div class="filter-group">
-            <label>Weekly Decline Threshold (%)</label>
+            <label>📉 Weekly Decline Threshold (%)</label>
             <input
               type="number"
               id="weeklyThreshold"
               value="5"
               min="0"
-              max="50"
+              max="100"
               step="0.1"
               placeholder="e.g., 5.0"
+              oninput="if(this.value<0)this.value=0;if(this.value>100)this.value=100"
+              onkeypress="return event.charCode>=48 && event.charCode<=57 || event.charCode==46"
             />
           </div>
           <div class="filter-group">
-            <label>Monthly Decline Threshold (%)</label>
+            <label>📊 Monthly Decline Threshold (%)</label>
             <input
               type="number"
               id="monthlyThreshold"
               value="10"
               min="0"
-              max="50"
+              max="100"
               step="0.1"
               placeholder="e.g., 10.0"
+              oninput="if(this.value<0)this.value=0;if(this.value>100)this.value=100"
+              onkeypress="return event.charCode>=48 && event.charCode<=57 || event.charCode==46"
             />
           </div>
           <div class="filter-group">
-            <label>Market Cap Filter</label>
+            <label>💰 Market Capitalization</label>
             <select id="marketCapFilter">
               <option value="all">All Market Caps</option>
               <option value="large">Large Cap Only</option>
@@ -602,7 +822,7 @@
             </select>
           </div>
           <div class="filter-group">
-            <label>Sector Filter</label>
+            <label>🏢 Sector Filter</label>
             <select id="sectorFilter">
               <option value="all">All Sectors</option>
               <option value="banking">Banking & Finance</option>
@@ -618,24 +838,25 @@
         </div>
 
         <button class="scan-button" onclick="scanStocks()">
-          <span id="buttonText">🔍 Find Dip Opportunities</span>
+          <span id="buttonText">🔍 Start Market Scan</span>
         </button>
       </div>
 
       <div class="results-section">
         <div id="loadingDiv" class="loading" style="display: none">
           <div class="spinner"></div>
-          <p id="loadingText">Scanning for stocks trading at lower prices...</p>
-          <p style="margin-top: 10px; font-size: 0.9rem">
-            Finding potential buying opportunities...
+          <p id="loadingText" style="font-size: 1.1rem; font-weight: 600;">Scanning market for opportunities<span class="loading-dots"></span></p>
+          <p style="margin-top: 15px; font-size: 0.95rem; color: #94a3b8;">
+            Analyzing price movements and identifying dip opportunities
           </p>
         </div>
 
         <div id="resultsDiv" style="display: none">
           <div class="results-header">
-            <div class="results-count" id="resultsCount">0 stocks found</div>
+            <div class="results-count" id="resultsCount">0 opportunities found</div>
             <button class="export-button" onclick="exportResults()">
-              📊 Export Results
+              <span>📊</span>
+              <span>Export Results</span>
             </button>
           </div>
 
@@ -648,32 +869,31 @@
 
         <div id="errorDiv" class="error-message" style="display: none">
           <h3>⚠️ Connection Error</h3>
-          <p id="errorText">Unable to connect to data service.</p>
+          <p id="errorText">Unable to connect to market data service.</p>
           <p style="margin-top: 10px">
             Please check your internet connection and try again.
           </p>
         </div>
 
         <div id="noResultsDiv" class="no-results" style="display: none">
-          <h3>🎯 No Declining Stocks Found</h3>
-          <p>No stocks in the selected universe meet your decline criteria.</p>
-          <p>Try lowering the thresholds to find more buying opportunities.</p>
+          <h3>🎯 No Matching Stocks Found</h3>
+          <p>No stocks in the selected universe meet your screening criteria.</p>
+          <p>Consider adjusting your thresholds or expanding your universe selection.</p>
         </div>
 
         <div id="initialMessage" class="no-results">
-          <h3>🚀 Stock Screening Ready</h3>
+          <h3>🚀Stock Scanner</h3>
           <p>
-            Set your decline thresholds above and click "Find Dip Opportunities"
-            to start
+            Configure your screening parameters and click "Start Market Scan" to begin analysis
           </p>
-          <div class="features-list">
+          <div class="features-list" style="margin-top: 30px;">
             <div class="feature-item">
               <span class="feature-icon">📉</span>
-              <span>Find stocks at lower prices</span>
+              <span>Identify price dips</span>
             </div>
             <div class="feature-item">
               <span class="feature-icon">🎯</span>
-              <span>Customizable decline filters</span>
+              <span>Custom screening filters</span>
             </div>
             <div class="feature-item">
               <span class="feature-icon">📈</span>
@@ -681,12 +901,8 @@
             </div>
             <div class="feature-item">
               <span class="feature-icon">💾</span>
-              <span>Export potential opportunities</span>
-            </div>
-          </div>
+              <span>Export to CSV</span>
         </div>
-      </div>
-    </div>
 
     <script>
       // Dynamic API configuration for production deployment
@@ -710,7 +926,7 @@
 
       // Initialize application
       document.addEventListener("DOMContentLoaded", function () {
-        console.log("🚀 NSE Stock Screening Tool Loaded");
+        console.log("🚀 Stock Screening Tool Loaded");
         console.log("🔌 API Base URL:", API_BASE);
 
         // Universe option selection
@@ -1059,7 +1275,7 @@
       }
 
       // Performance monitoring
-      console.log("📊 NSE Stock Screening Tool Ready");
+      console.log("📊Stock Screening Tool");
       console.log("🔌 API Configuration:", {
         base: API_BASE,
         environment:
