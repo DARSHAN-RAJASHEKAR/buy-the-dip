@@ -4,6 +4,7 @@ from flask_cors import CORS
 import requests
 from datetime import datetime, timedelta
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 app = Flask(__name__)
 
@@ -20,11 +21,11 @@ if os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('PORT'):
          methods=["GET", "POST", "OPTIONS"],
          allow_headers=["Content-Type", "Authorization"]
     )
-    print("🌍 Production CORS enabled for Vercel domains")
+    print("Production CORS enabled for Vercel domains")
 else:
     # Development
     CORS(app)
-    print("🔧 Development CORS enabled for all origins")
+    print("Development CORS enabled for all origins")
 
 # Comprehensive stock lists - manually curated and reliable
 def get_nifty_50_stocks():
@@ -390,7 +391,7 @@ def get_nifty_200_stocks():
         {'symbol': 'WIPRO.NS', 'name': 'Wipro', 'sector': 'it', 'marketCap': 'small'},
         {'symbol': 'YESBANK.NS', 'name': 'Yes Bank', 'sector': 'banking', 'marketCap': 'small'},
         {'symbol': 'ZYDUSLIFE.NS', 'name': 'Zydus Lifesciences', 'sector': 'healthcare', 'marketCap': 'small'},
-        {'symbol': 'ZOMATO.NS', 'name': 'Zomato', 'sector': 'consumer', 'marketCap': 'small'},
+        {'symbol': 'ETERNAL.NS', 'name': 'Zomato', 'sector': 'consumer', 'marketCap': 'small'},
         {'symbol': 'ZEEL.NS', 'name': 'Zee Entertainment Enterprises', 'sector': 'consumer', 'marketCap': 'small'}
     ]
     
@@ -418,7 +419,7 @@ def get_nifty_500_stocks():
         {'symbol': 'ADANIPORTS.NS', 'name': 'Adani Ports and Special Economic Zone', 'sector': 'infrastructure', 'marketCap': 'large'},
         {'symbol': 'ADANIPOWER.NS', 'name': 'Adani Power', 'sector': 'energy', 'marketCap': 'large'},
         {'symbol': 'ATGL.NS', 'name': 'Adani Total Gas', 'sector': 'energy', 'marketCap': 'large'},
-        {'symbol': 'ADANIWILMAR.NS', 'name': 'Adani Wilmar', 'sector': 'fmcg', 'marketCap': 'large'},
+        {'symbol': 'AWL.NS', 'name': 'Adani Wilmar', 'sector': 'fmcg', 'marketCap': 'large'},
         {'symbol': 'AEGISLOG.NS', 'name': 'Aegis Logistics', 'sector': 'energy', 'marketCap': 'large'},
         {'symbol': 'AETHER.NS', 'name': 'Aether Industries', 'sector': 'chemicals', 'marketCap': 'large'},
         {'symbol': 'AFFLE.NS', 'name': 'Affle (India)', 'sector': 'it', 'marketCap': 'large'},
@@ -492,7 +493,7 @@ def get_nifty_500_stocks():
         {'symbol': 'CARBORUNIV.NS', 'name': 'Carborundum Universal', 'sector': 'capital_goods', 'marketCap': 'mid'},
         {'symbol': 'CASTROLIND.NS', 'name': 'Castrol India', 'sector': 'energy', 'marketCap': 'mid'},
         {'symbol': 'CEATLTD.NS', 'name': 'CEAT', 'sector': 'auto', 'marketCap': 'mid'},
-        {'symbol': 'CENTURYTEX.NS', 'name': 'Century Textiles & Industries', 'sector': 'textiles', 'marketCap': 'mid'},
+        {'symbol': 'ABREL.NS', 'name': 'Century Textiles & Industries', 'sector': 'textiles', 'marketCap': 'mid'},
         {'symbol': 'CERA.NS', 'name': 'Cera Sanitaryware', 'sector': 'consumer', 'marketCap': 'mid'},
         {'symbol': 'CHALET.NS', 'name': 'Chalet Hotels', 'sector': 'consumer', 'marketCap': 'mid'},
         {'symbol': 'CHAMBLFERT.NS', 'name': 'Chambal Fertilizers & Chemicals', 'sector': 'chemicals', 'marketCap': 'mid'},
@@ -528,7 +529,7 @@ def get_nifty_500_stocks():
         {'symbol': 'EMAMILTD.NS', 'name': 'Emami', 'sector': 'fmcg', 'marketCap': 'small'},
         {'symbol': 'ENDURANCE.NS', 'name': 'Endurance Technologies', 'sector': 'auto', 'marketCap': 'small'},
         {'symbol': 'ENGINERSIN.NS', 'name': 'Engineers India', 'sector': 'construction', 'marketCap': 'small'},
-        {'symbol': 'EQUITAS.NS', 'name': 'Equitas Small Finance Bank', 'sector': 'banking', 'marketCap': 'small'},
+        {'symbol': 'EQUITASBNK.NS', 'name': 'Equitas Small Finance Bank', 'sector': 'banking', 'marketCap': 'small'},
         {'symbol': 'ESCORTS.NS', 'name': 'Escorts Kubota', 'sector': 'capital_goods', 'marketCap': 'small'},
         {'symbol': 'ESABINDIA.NS', 'name': 'Esab India', 'sector': 'capital_goods', 'marketCap': 'small'},
         {'symbol': 'ETERNAL.NS', 'name': 'Eternal', 'sector': 'consumer', 'marketCap': 'small'},
@@ -547,7 +548,7 @@ def get_nifty_500_stocks():
         {'symbol': 'GLENMARK.NS', 'name': 'Glenmark Pharmaceuticals', 'sector': 'healthcare', 'marketCap': 'small'},
         {'symbol': 'GLAXO.NS', 'name': 'GlaxoSmithKline Pharmaceuticals', 'sector': 'healthcare', 'marketCap': 'small'},
         {'symbol': 'GMDCLTD.NS', 'name': 'Gujarat Mineral Development Corporation', 'sector': 'metals', 'marketCap': 'small'},
-        {'symbol': 'GMRINFRA.NS', 'name': 'GMR Infrastructure', 'sector': 'infrastructure', 'marketCap': 'small'},
+        {'symbol': 'GMRAIRPORT.NS', 'name': 'GMR Infrastructure', 'sector': 'infrastructure', 'marketCap': 'small'},
         {'symbol': 'GODFRYPHLP.NS', 'name': 'Godfrey Phillips India', 'sector': 'fmcg', 'marketCap': 'small'},
         {'symbol': 'GODREJCP.NS', 'name': 'Godrej Consumer Products', 'sector': 'fmcg', 'marketCap': 'small'},
         {'symbol': 'GODREJIND.NS', 'name': 'Godrej Industries', 'sector': 'chemicals', 'marketCap': 'small'},
@@ -575,8 +576,8 @@ def get_nifty_500_stocks():
         {'symbol': 'HAVELLS.NS', 'name': 'Havells India', 'sector': 'consumer', 'marketCap': 'small'},
         {'symbol': 'HEIDELBERG.NS', 'name': 'HeidelbergCement India', 'sector': 'cement', 'marketCap': 'small'},
         {'symbol': 'HEROMOTOCO.NS', 'name': 'Hero MotoCorp', 'sector': 'auto', 'marketCap': 'small'},
-        {'symbol': 'HEXAWARE.NS', 'name': 'Hexaware Technologies', 'sector': 'it', 'marketCap': 'small'},
-        {'symbol': 'HICAL.NS', 'name': 'Hical Chemicals', 'sector': 'chemicals', 'marketCap': 'small'},
+        {'symbol': 'HEXT.NS', 'name': 'Hexaware Technologies', 'sector': 'it', 'marketCap': 'small'},
+        {'symbol': 'HIKAL.NS', 'name': 'Hical Chemicals', 'sector': 'chemicals', 'marketCap': 'small'},
         {'symbol': 'HINDALCO.NS', 'name': 'Hindalco Industries', 'sector': 'metals', 'marketCap': 'small'},
         {'symbol': 'HAL.NS', 'name': 'Hindustan Aeronautics', 'sector': 'capital_goods', 'marketCap': 'small'},
         {'symbol': 'HINDCOPPER.NS', 'name': 'Hindustan Copper', 'sector': 'metals', 'marketCap': 'small'},
@@ -586,9 +587,9 @@ def get_nifty_500_stocks():
         {'symbol': 'HINDUSTANBIOSCI.NS', 'name': 'Hindustan BioSciences', 'sector': 'healthcare', 'marketCap': 'small'},
         {'symbol': 'HIMATSEIDE.NS', 'name': 'Himatsingka Seide', 'sector': 'textiles', 'marketCap': 'small'},
         {'symbol': 'HPL.NS', 'name': 'HPL Electric & Power', 'sector': 'capital_goods', 'marketCap': 'small'},
-        {'symbol': 'HSIL.NS', 'name': 'HSIL', 'sector': 'consumer', 'marketCap': 'small'},
+        {'symbol': 'AGI.NS', 'name': 'HSIL', 'sector': 'consumer', 'marketCap': 'small'},
         {'symbol': 'HYUNDAI.NS', 'name': 'Hyundai Motor India', 'sector': 'auto', 'marketCap': 'small'},
-        {'symbol': 'IBULHSGFIN.NS', 'name': 'Indiabulls Housing Finance', 'sector': 'banking', 'marketCap': 'small'},
+        {'symbol': 'SAMMAANCAP.NS', 'name': 'Indiabulls Housing Finance', 'sector': 'banking', 'marketCap': 'small'},
         {'symbol': 'ICICIBANK.NS', 'name': 'ICICI Bank', 'sector': 'banking', 'marketCap': 'small'},
         {'symbol': 'ICICIGI.NS', 'name': 'ICICI Lombard General Insurance Company', 'sector': 'banking', 'marketCap': 'small'},
         {'symbol': 'ICICIPRULI.NS', 'name': 'ICICI Prudential Life Insurance Company', 'sector': 'banking', 'marketCap': 'small'},
@@ -613,12 +614,11 @@ def get_nifty_500_stocks():
         {'symbol': 'NAUKRI.NS', 'name': 'Info Edge (India)', 'sector': 'consumer', 'marketCap': 'small'},
         {'symbol': 'INFY.NS', 'name': 'Infosys', 'sector': 'it', 'marketCap': 'small'},
         {'symbol': 'INGERRAND.NS', 'name': 'Ingersoll Rand (India)', 'sector': 'capital_goods', 'marketCap': 'small'},
-        {'symbol': 'INOXLEISUR.NS', 'name': 'INOX Leisure', 'sector': 'consumer', 'marketCap': 'small'},
         {'symbol': 'INSECTICID.NS', 'name': 'Insecticides (India)', 'sector': 'chemicals', 'marketCap': 'small'},
         {'symbol': 'INTELLECT.NS', 'name': 'Intellect Design Arena', 'sector': 'it', 'marketCap': 'small'},
         {'symbol': 'IPCALAB.NS', 'name': 'IPCA Laboratories', 'sector': 'healthcare', 'marketCap': 'small'},
         {'symbol': 'IRB.NS', 'name': 'IRB Infrastructure Developers', 'sector': 'construction', 'marketCap': 'small'},
-        {'symbol': 'ISEC.NS', 'name': 'IIFL Securities', 'sector': 'banking', 'marketCap': 'small'},
+        {'symbol': 'IIFLCAPS.NS', 'name': 'IIFL Securities', 'sector': 'banking', 'marketCap': 'small'},
         {'symbol': 'ITC.NS', 'name': 'ITC', 'sector': 'fmcg', 'marketCap': 'small'},
         
         # Micro Cap (251-501)
@@ -632,7 +632,7 @@ def get_nifty_500_stocks():
         {'symbol': 'JKPAPER.NS', 'name': 'JK Paper', 'sector': 'consumer', 'marketCap': 'micro'},
         {'symbol': 'JKTYRE.NS', 'name': 'JK Tyre & Industries', 'sector': 'auto', 'marketCap': 'micro'},
         {'symbol': 'JMFINANCIL.NS', 'name': 'JM Financial', 'sector': 'banking', 'marketCap': 'micro'},
-        {'symbol': 'JSLHISAR.NS', 'name': 'Jindal Stainless (Hisar)', 'sector': 'metals', 'marketCap': 'micro'},
+        {'symbol': 'JSL.NS', 'name': 'Jindal Stainless (Hisar)', 'sector': 'metals', 'marketCap': 'micro'},
         {'symbol': 'JINDALSTEL.NS', 'name': 'Jindal Steel & Power', 'sector': 'metals', 'marketCap': 'micro'},
         {'symbol': 'JIOFIN.NS', 'name': 'Jio Financial Services', 'sector': 'banking', 'marketCap': 'micro'},
         {'symbol': 'JYOTHYLAB.NS', 'name': 'Jyothy Labs', 'sector': 'fmcg', 'marketCap': 'micro'},
@@ -641,7 +641,7 @@ def get_nifty_500_stocks():
         {'symbol': 'JUSTDIAL.NS', 'name': 'Just Dial', 'sector': 'consumer', 'marketCap': 'micro'},
         {'symbol': 'JYOTHYLAB.NS', 'name': 'Jyothy Labs', 'sector': 'fmcg', 'marketCap': 'micro'},
         {'symbol': 'KAJARIACER.NS', 'name': 'Kajaria Ceramics', 'sector': 'consumer', 'marketCap': 'micro'},
-        {'symbol': 'KALPATPOWR.NS', 'name': 'Kalpataru Power Transmission', 'sector': 'capital_goods', 'marketCap': 'micro'},
+        {'symbol': 'KPIL.NS', 'name': 'Kalpataru Power Transmission', 'sector': 'capital_goods', 'marketCap': 'micro'},
         {'symbol': 'KANSAINER.NS', 'name': 'Kansai Nerolac Paints', 'sector': 'chemicals', 'marketCap': 'micro'},
         {'symbol': 'KAPURPESTH.NS', 'name': 'Kapur Pesticides', 'sector': 'chemicals', 'marketCap': 'micro'},
         {'symbol': 'KARURVYSYA.NS', 'name': 'Karur Vysya Bank', 'sector': 'banking', 'marketCap': 'micro'},
@@ -660,7 +660,7 @@ def get_nifty_500_stocks():
         {'symbol': 'KRBL.NS', 'name': 'KRBL', 'sector': 'fmcg', 'marketCap': 'micro'},
         {'symbol': 'KSB.NS', 'name': 'KSB', 'sector': 'capital_goods', 'marketCap': 'micro'},
         {'symbol': 'KTKBANK.NS', 'name': 'Karnataka Bank', 'sector': 'banking', 'marketCap': 'micro'},
-        {'symbol': 'L&TFH.NS', 'name': 'L&T Finance Holdings', 'sector': 'banking', 'marketCap': 'micro'},
+        {'symbol': 'LTF.NS', 'name': 'L&T Finance Holdings', 'sector': 'banking', 'marketCap': 'micro'},
         {'symbol': 'LTIM.NS', 'name': 'LTIMindtree', 'sector': 'it', 'marketCap': 'micro'},
         {'symbol': 'LTTS.NS', 'name': 'L&T Technology Services', 'sector': 'it', 'marketCap': 'micro'},
         {'symbol': 'LEMONTREE.NS', 'name': 'Lemon Tree Hotels', 'sector': 'consumer', 'marketCap': 'micro'},
@@ -677,22 +677,20 @@ def get_nifty_500_stocks():
         {'symbol': 'M&MFIN.NS', 'name': 'Mahindra & Mahindra Financial Services', 'sector': 'banking', 'marketCap': 'micro'},
         {'symbol': 'MFSL.NS', 'name': 'Max Financial Services', 'sector': 'banking', 'marketCap': 'micro'},
         {'symbol': 'MGL.NS', 'name': 'Mahanagar Gas', 'sector': 'energy', 'marketCap': 'micro'},
-        {'symbol': 'MAHINDCIE.NS', 'name': 'Mahindra CIE Automotive', 'sector': 'auto', 'marketCap': 'micro'},
-        {'symbol': 'MAJESCO.NS', 'name': 'Majesco', 'sector': 'it', 'marketCap': 'micro'},
+        {'symbol': 'CIEINDIA.NS', 'name': 'Mahindra CIE Automotive', 'sector': 'auto', 'marketCap': 'micro'},
         {'symbol': 'MANAPPURAM.NS', 'name': 'Manappuram Finance', 'sector': 'banking', 'marketCap': 'micro'},
         {'symbol': 'MARICO.NS', 'name': 'Marico', 'sector': 'fmcg', 'marketCap': 'micro'},
         {'symbol': 'MARUTI.NS', 'name': 'Maruti Suzuki India', 'sector': 'auto', 'marketCap': 'micro'},
         {'symbol': 'MASTEK.NS', 'name': 'Mastek', 'sector': 'it', 'marketCap': 'micro'},
         {'symbol': 'MAXHEALTH.NS', 'name': 'Max Healthcare Institute', 'sector': 'healthcare', 'marketCap': 'micro'},
         {'symbol': 'MAZDOCK.NS', 'name': 'Mazagon Dock Shipbuilders', 'sector': 'capital_goods', 'marketCap': 'micro'},
-        {'symbol': 'MCDOWELL-N.NS', 'name': 'United Spirits', 'sector': 'fmcg', 'marketCap': 'micro'},
+        {'symbol': 'MCDHOLDING.NS', 'name': 'United Spirits', 'sector': 'fmcg', 'marketCap': 'micro'},
         {'symbol': 'MCX.NS', 'name': 'Multi Commodity Exchange of India', 'sector': 'banking', 'marketCap': 'micro'},
         {'symbol': 'MEDPLUS.NS', 'name': 'MedPlus Health Services', 'sector': 'healthcare', 'marketCap': 'micro'},
         {'symbol': 'METROPOLIS.NS', 'name': 'Metropolis Healthcare', 'sector': 'healthcare', 'marketCap': 'micro'},
         {'symbol': 'MHRIL.NS', 'name': 'Mahindra Holidays & Resorts India', 'sector': 'consumer', 'marketCap': 'micro'},
         {'symbol': 'MIDHANI.NS', 'name': 'Mishra Dhatu Nigam', 'sector': 'metals', 'marketCap': 'micro'},
         {'symbol': 'MINDACORP.NS', 'name': 'Minda Corporation', 'sector': 'auto', 'marketCap': 'micro'},
-        {'symbol': 'MINDTREE.NS', 'name': 'Mindtree', 'sector': 'it', 'marketCap': 'micro'},
         {'symbol': 'MOLDTKPAC.NS', 'name': 'Mold-Tek Packaging', 'sector': 'consumer', 'marketCap': 'micro'},
         {'symbol': 'MOIL.NS', 'name': 'MOIL', 'sector': 'metals', 'marketCap': 'micro'},
         {'symbol': 'MRF.NS', 'name': 'MRF', 'sector': 'auto', 'marketCap': 'micro'},
@@ -703,7 +701,7 @@ def get_nifty_500_stocks():
         {'symbol': 'MSUMI.NS', 'name': 'Motherson Sumi Wiring India', 'sector': 'auto', 'marketCap': 'micro'},
         {'symbol': 'MTARTECH.NS', 'name': 'MTAR Technologies', 'sector': 'capital_goods', 'marketCap': 'micro'},
         {'symbol': 'MUTHOOTFIN.NS', 'name': 'Muthoot Finance', 'sector': 'banking', 'marketCap': 'micro'},
-        {'symbol': 'NALCO.NS', 'name': 'National Aluminium Company', 'sector': 'metals', 'marketCap': 'micro'},
+        {'symbol': 'NATIONALUM.NS', 'name': 'National Aluminium Company', 'sector': 'metals', 'marketCap': 'micro'},
         {'symbol': 'NATIONALUM.NS', 'name': 'National Aluminium Company', 'sector': 'metals', 'marketCap': 'micro'},
         {'symbol': 'NAVINFLUOR.NS', 'name': 'Navin Fluorine International', 'sector': 'chemicals', 'marketCap': 'micro'},
         {'symbol': 'NESCO.NS', 'name': 'Nesco', 'sector': 'infrastructure', 'marketCap': 'micro'},
@@ -735,7 +733,7 @@ def get_nifty_500_stocks():
         {'symbol': 'PHOENIXLTD.NS', 'name': 'The Phoenix Mills', 'sector': 'realty', 'marketCap': 'micro'},
         {'symbol': 'PIDILITIND.NS', 'name': 'Pidilite Industries', 'sector': 'chemicals', 'marketCap': 'micro'},
         {'symbol': 'PIIND.NS', 'name': 'PI Industries', 'sector': 'chemicals', 'marketCap': 'micro'},
-        {'symbol': 'PIRAMALENT.NS', 'name': 'Piramal Enterprises', 'sector': 'healthcare', 'marketCap': 'micro'},
+        {'symbol': 'PEL.NS', 'name': 'Piramal Enterprises', 'sector': 'healthcare', 'marketCap': 'micro'},
         {'symbol': 'POLICYBZR.NS', 'name': 'PB Fintech', 'sector': 'banking', 'marketCap': 'micro'},
         {'symbol': 'POLYMED.NS', 'name': 'Poly Medicure', 'sector': 'healthcare', 'marketCap': 'micro'},
         {'symbol': 'POLYCAB.NS', 'name': 'Polycab India', 'sector': 'capital_goods', 'marketCap': 'micro'},
@@ -747,7 +745,7 @@ def get_nifty_500_stocks():
         {'symbol': 'PRESTIGE.NS', 'name': 'Prestige Estates Projects', 'sector': 'realty', 'marketCap': 'micro'},
         {'symbol': 'PRINCEPIPE.NS', 'name': 'Prince Pipes and Fittings', 'sector': 'capital_goods', 'marketCap': 'micro'},
         {'symbol': 'PRSMJOHNSN.NS', 'name': 'Prism Johnson', 'sector': 'cement', 'marketCap': 'micro'},
-        {'symbol': 'PVR.NS', 'name': 'PVR', 'sector': 'consumer', 'marketCap': 'micro'},
+        {'symbol': 'PVRINOX.NS', 'name': 'PVR', 'sector': 'consumer', 'marketCap': 'micro'},
         {'symbol': 'PVRINOX.NS', 'name': 'PVR INOX', 'sector': 'consumer', 'marketCap': 'micro'},
         {'symbol': 'PNB.NS', 'name': 'Punjab National Bank', 'sector': 'banking', 'marketCap': 'micro'},
         {'symbol': 'QUESS.NS', 'name': 'Quess Corp', 'sector': 'consumer', 'marketCap': 'micro'},
@@ -781,7 +779,7 @@ def get_nifty_500_stocks():
         {'symbol': 'SFL.NS', 'name': 'Sheela Foam', 'sector': 'consumer', 'marketCap': 'micro'},
         {'symbol': 'SHOPERSTOP.NS', 'name': 'Shoppers Stop', 'sector': 'consumer', 'marketCap': 'micro'},
         {'symbol': 'SHREECEM.NS', 'name': 'Shree Cement', 'sector': 'cement', 'marketCap': 'micro'},
-        {'symbol': 'SHREYAS.NS', 'name': 'Shreyas Shipping & Logistics', 'sector': 'infrastructure', 'marketCap': 'micro'},
+        {'symbol': 'TRANSWORLD.NS', 'name': 'Shreyas Shipping & Logistics', 'sector': 'infrastructure', 'marketCap': 'micro'},
         {'symbol': 'SHRIRAMFIN.NS', 'name': 'Shriram Finance', 'sector': 'banking', 'marketCap': 'micro'},
         {'symbol': 'SIEMENS.NS', 'name': 'Siemens', 'sector': 'capital_goods', 'marketCap': 'micro'},
         {'symbol': 'SIS.NS', 'name': 'SIS', 'sector': 'consumer', 'marketCap': 'micro'},
@@ -827,7 +825,7 @@ def get_nifty_500_stocks():
         {'symbol': 'TRIDENT.NS', 'name': 'Trident', 'sector': 'textiles', 'marketCap': 'micro'},
         {'symbol': 'TRITURBINE.NS', 'name': 'Triveni Turbine', 'sector': 'capital_goods', 'marketCap': 'micro'},
         {'symbol': 'TTML.NS', 'name': 'Tata Teleservices (Maharashtra)', 'sector': 'telecom', 'marketCap': 'micro'},
-        {'symbol': 'UJJIVAN.NS', 'name': 'Ujjivan Financial Services', 'sector': 'banking', 'marketCap': 'micro'},
+        {'symbol': 'UJJIVANSFB.NS', 'name': 'Ujjivan Financial Services', 'sector': 'banking', 'marketCap': 'micro'},
         {'symbol': 'UBL.NS', 'name': 'United Breweries', 'sector': 'fmcg', 'marketCap': 'micro'},
         {'symbol': 'ULTRACEMCO.NS', 'name': 'UltraTech Cement', 'sector': 'cement', 'marketCap': 'micro'},
         {'symbol': 'UNIONBANK.NS', 'name': 'Union Bank of India', 'sector': 'banking', 'marketCap': 'micro'},
@@ -844,7 +842,7 @@ def get_nifty_500_stocks():
         {'symbol': 'VTL.NS', 'name': 'Vardhman Textiles', 'sector': 'textiles', 'marketCap': 'micro'},
         {'symbol': 'WABCOINDIA.NS', 'name': 'Wabco India', 'sector': 'auto', 'marketCap': 'micro'},
         {'symbol': 'WELCORP.NS', 'name': 'Welspun Corp', 'sector': 'metals', 'marketCap': 'micro'},
-        {'symbol': 'WELSPUNIND.NS', 'name': 'Welspun India', 'sector': 'textiles', 'marketCap': 'micro'},
+        {'symbol': '	WELSPUNLIV.NS', 'name': 'Welspun India', 'sector': 'textiles', 'marketCap': 'micro'},
         {'symbol': 'WESTLIFE.NS', 'name': 'Westlife Foodworld', 'sector': 'consumer', 'marketCap': 'micro'},
         {'symbol': 'WHIRLPOOL.NS', 'name': 'Whirlpool of India', 'sector': 'consumer', 'marketCap': 'micro'},
         {'symbol': 'WIPRO.NS', 'name': 'Wipro', 'sector': 'it', 'marketCap': 'micro'},
@@ -853,7 +851,7 @@ def get_nifty_500_stocks():
         {'symbol': 'ZENSARTECH.NS', 'name': 'Zensar Technologies', 'sector': 'it', 'marketCap': 'micro'},
         {'symbol': 'ZFCVINDIA.NS', 'name': 'ZF Commercial Vehicle Control Systems India', 'sector': 'auto', 'marketCap': 'micro'},
         {'symbol': 'ZYDUSLIFE.NS', 'name': 'Zydus Lifesciences', 'sector': 'healthcare', 'marketCap': 'micro'},
-        {'symbol': 'ZOMATO.NS', 'name': 'Zomato', 'sector': 'consumer', 'marketCap': 'micro'},
+        {'symbol': 'ETERNAL.NS', 'name': 'Zomato', 'sector': 'consumer', 'marketCap': 'micro'},
         {'symbol': 'ZEEL.NS', 'name': 'Zee Entertainment Enterprises', 'sector': 'consumer', 'marketCap': 'micro'}
     ]
 
@@ -883,6 +881,31 @@ def get_stock_universe(universe_type):
         # Default to Nifty 100
         return get_nifty_100_stocks()
 
+def process_single_stock(stock, weekly_threshold, monthly_threshold):
+    """Process a single stock and return result if it matches criteria"""
+    try:
+        # Fetch REAL market data from Yahoo Finance
+        market_data = fetch_yahoo_finance_data(stock['symbol'])
+        
+        # Count data quality
+        if market_data['status'] == 'success':
+            # Check criteria
+            weekly_decline = market_data['weeklyChange'] <= -weekly_threshold
+            monthly_decline = market_data['monthlyChange'] <= -monthly_threshold
+            
+            if weekly_decline and monthly_decline:
+                result = {**stock, **market_data}
+                print(f"[MATCH] {stock['symbol']} - W:{market_data['weeklyChange']}% M:{market_data['monthlyChange']}% [YAHOO FINANCE]")
+                return {'status': 'match', 'data': result}
+            else:
+                return {'status': 'no_match', 'data': market_data}
+        else:  # failed
+            print(f"[FAILED] {stock['symbol']} - Yahoo Finance API failed")
+            return {'status': 'failed', 'data': market_data}
+    except Exception as e:
+        print(f"[ERROR] {stock['symbol']} - {str(e)}")
+        return {'status': 'error', 'data': None}
+
 def fetch_yahoo_finance_data(symbol):
     """Fetch real stock data from Yahoo Finance - ONLY working source"""
     print(f"🔍 Fetching REAL data from Yahoo Finance for {symbol}...")
@@ -899,6 +922,8 @@ def fetch_yahoo_finance_data(symbol):
             'includePrePost': 'true'
         }
         
+        # Small delay to respect API rate limits (but much less than 1 second)
+        time.sleep(0.1)
         response = requests.get(url, headers=headers, params=params, timeout=15)
         
         if response.status_code == 200:
@@ -1032,64 +1057,85 @@ def scan_stocks():
         sector_filter = data.get('sectorFilter', 'all')
         stock_universe = data.get('stockUniverse', 'nifty100')
         
-        print(f"\n🔍 CLEAN SCAN STARTING")
-        print(f"📊 Universe: {stock_universe}")
-        print(f"🎯 Criteria: Weekly ≤ -{weekly_threshold}%, Monthly ≤ -{monthly_threshold}%")
-        print(f"🏢 Filters: Market Cap = {market_cap_filter}, Sector = {sector_filter}")
-        print(f"📈 Data Source: Yahoo Finance ONLY")
+        print(f"\n[SCAN] CLEAN SCAN STARTING")
+        print(f"[UNIVERSE] {stock_universe}")
+        print(f"[CRITERIA] Weekly ≤ -{weekly_threshold}%, Monthly ≤ -{monthly_threshold}%")
+        print(f"[FILTERS] Market Cap = {market_cap_filter}, Sector = {sector_filter}")
+        print(f"[DATA] Source: Yahoo Finance ONLY")
         
         # Get stock list
         stock_list = get_stock_universe(stock_universe)
         
-        results = []
-        processed = 0
-        real_data_count = 0
-        failed_count = 0
-        
+        # Filter stocks based on criteria
+        filtered_stocks = []
         for stock in stock_list:
             # Apply filters
             if market_cap_filter != 'all' and stock.get('marketCap') != market_cap_filter:
                 continue
             if sector_filter != 'all' and stock.get('sector') != sector_filter:
                 continue
-            
-            # Fetch REAL market data from Yahoo Finance
-            market_data = fetch_yahoo_finance_data(stock['symbol'])
-            processed += 1
-            
-            # Count data quality
-            if market_data['status'] == 'success':
-                real_data_count += 1
-                
-                # Check criteria
-                weekly_decline = market_data['weeklyChange'] <= -weekly_threshold
-                monthly_decline = market_data['monthlyChange'] <= -monthly_threshold
-                
-                if weekly_decline and monthly_decline:
-                    result = {**stock, **market_data}
-                    results.append(result)
-                    print(f"✅ MATCH: {stock['symbol']} - W:{market_data['weeklyChange']}% M:{market_data['monthlyChange']}% [YAHOO FINANCE]")
-                    
-            else:  # failed
-                failed_count += 1
-                print(f"❌ FAILED: {stock['symbol']} - Yahoo Finance API failed")
-            
-            # Delay to respect API limits
-            time.sleep(1)
-            
-            # Progress update every 10 stocks
-            if processed % 10 == 0:
-                print(f"\n📊 Progress: {processed}/{len(stock_list)}")
-                print(f"   ✅ Yahoo Finance success: {real_data_count}")
-                print(f"   ❌ Failed: {failed_count}")
-                print(f"   🎯 Matches found: {len(results)}")
+            filtered_stocks.append(stock)
         
-        print(f"\n🎯 SCAN COMPLETE:")
-        print(f"   📊 Universe: {stock_universe} ({len(stock_list)} stocks)")
-        print(f"   📈 Processed: {processed}")
-        print(f"   ✅ Yahoo Finance success: {real_data_count}")
-        print(f"   ❌ Failed: {failed_count}")
-        print(f"   🎯 Stocks meeting criteria: {len(results)}")
+        print(f"[FILTER] {len(filtered_stocks)} stocks to process")
+        
+        results = []
+        processed = 0
+        real_data_count = 0
+        failed_count = 0
+        failed_stocks = []
+        
+        # Process stocks concurrently with ThreadPoolExecutor
+        # Use max 5 concurrent threads to respect API rate limits
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            # Submit all tasks
+            future_to_stock = {
+                executor.submit(process_single_stock, stock, weekly_threshold, monthly_threshold): stock 
+                for stock in filtered_stocks
+            }
+            
+            # Process completed futures as they complete
+            for future in as_completed(future_to_stock):
+                stock = future_to_stock[future]
+                processed += 1
+                
+                try:
+                    result = future.result()
+                    
+                    if result['status'] == 'match':
+                        results.append(result['data'])
+                        real_data_count += 1
+                    elif result['status'] == 'no_match':
+                        real_data_count += 1
+                    elif result['status'] == 'failed':
+                        failed_count += 1
+                        failed_stocks.append({'symbol': stock['symbol'], 'name': stock['name']})
+                    elif result['status'] == 'error':
+                        failed_count += 1
+                        failed_stocks.append({'symbol': stock['symbol'], 'name': stock['name']})
+                        
+                except Exception as e:
+                    failed_count += 1
+                    failed_stocks.append({'symbol': stock['symbol'], 'name': stock['name']})
+                    print(f"[ERROR] {stock['symbol']} - Future execution failed: {str(e)}")
+                
+                # Progress update every 10 stocks
+                if processed % 10 == 0:
+                    print(f"\n[PROGRESS] {processed}/{len(filtered_stocks)}")
+                    print(f"   [SUCCESS] Yahoo Finance success: {real_data_count}")
+                    print(f"   [FAILED] Failed: {failed_count}")
+                    print(f"   [MATCHES] Found: {len(results)}")
+        
+        print(f"\n[SCAN COMPLETE]")
+        print(f"   [UNIVERSE] {stock_universe} ({len(stock_list)} total, {len(filtered_stocks)} filtered)")
+        print(f"   [PROCESSED] {processed}")
+        print(f"   [SUCCESS] Yahoo Finance success: {real_data_count}")
+        print(f"   [FAILED] {failed_count}")
+        print(f"   [RESULTS] Stocks meeting criteria: {len(results)}")
+        
+        if failed_stocks:
+            print(f"\n[FAILED STOCKS] {len(failed_stocks)} stocks failed:")
+            for failed_stock in sorted(failed_stocks, key=lambda x: x['symbol']):
+                print(f"   - {failed_stock['symbol']} ({failed_stock['name']})")
         
         return jsonify({
             'results': results,
@@ -1115,7 +1161,7 @@ def scan_stocks():
         })
         
     except Exception as e:
-        print(f"❌ Scan error: {str(e)}")
+        print(f"[SCAN ERROR] {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/health')
