@@ -5,7 +5,7 @@ services:
     plan: free
     rootDir: backend
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn --bind 0.0.0.0:$PORT app:app
+    startCommand: waitress-serve --host=0.0.0.0 --port=$PORT --connection-limit=100 --cleanup-interval=30 app:app
     envVars:
       - key: RENDER
         value: true
