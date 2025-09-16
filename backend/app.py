@@ -9,8 +9,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 app = Flask(__name__)
 
 # Production CORS configuration
-if os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('PORT'):
-    # Production on Railway
+if os.environ.get('RENDER') or os.environ.get('PORT'):
+    # Production on Render
     CORS(app, 
          origins=[
              "https://buy-the-dip-beige.vercel.app",

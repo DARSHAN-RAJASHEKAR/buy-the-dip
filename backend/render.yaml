@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: indian-stock-scanner-backend
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
+    envVars:
+      - key: RENDER
+        value: true
+      - key: FLASK_ENV
+        value: production
