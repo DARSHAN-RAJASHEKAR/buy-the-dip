@@ -14,6 +14,7 @@ if os.environ.get('RENDER') or os.environ.get('PORT'):
     CORS(app, 
          origins=[
              "https://buy-the-dip-beige.vercel.app",
+             "https://buythedip.darshanrajashekar.dev",
              "https://*.vercel.app",
              "http://localhost:3000",
              "http://127.0.0.1:5000"
