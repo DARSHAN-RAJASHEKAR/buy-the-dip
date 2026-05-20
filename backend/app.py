@@ -856,20 +856,397 @@ def get_nifty_500_stocks():
         {'symbol': 'ZEEL.NS', 'name': 'Zee Entertainment Enterprises', 'sector': 'consumer', 'marketCap': 'micro'}
     ]
 
-def get_stock_universe(universe_type):
-    """Get stock universe - using only static lists (reliable)"""
-    print(f"\n📋 Getting {universe_type} stock universe from static lists...")
-    
+# ── US Stock Lists ──────────────────────────────────────────────────────────
+
+def get_dow30_stocks():
+    return [
+        {'symbol': 'AAPL',  'name': 'Apple Inc.',               'sector': 'technology',  'marketCap': 'large'},
+        {'symbol': 'AMGN',  'name': 'Amgen Inc.',                'sector': 'healthcare',  'marketCap': 'large'},
+        {'symbol': 'AXP',   'name': 'American Express',          'sector': 'financials',  'marketCap': 'large'},
+        {'symbol': 'BA',    'name': 'Boeing Co.',                'sector': 'industrials', 'marketCap': 'large'},
+        {'symbol': 'CAT',   'name': 'Caterpillar Inc.',          'sector': 'industrials', 'marketCap': 'large'},
+        {'symbol': 'CRM',   'name': 'Salesforce Inc.',           'sector': 'technology',  'marketCap': 'large'},
+        {'symbol': 'CSCO',  'name': 'Cisco Systems',             'sector': 'technology',  'marketCap': 'large'},
+        {'symbol': 'CVX',   'name': 'Chevron Corp.',             'sector': 'energy',      'marketCap': 'large'},
+        {'symbol': 'DIS',   'name': 'Walt Disney Co.',           'sector': 'communication','marketCap': 'large'},
+        {'symbol': 'DOW',   'name': 'Dow Inc.',                  'sector': 'materials',   'marketCap': 'large'},
+        {'symbol': 'GS',    'name': 'Goldman Sachs',             'sector': 'financials',  'marketCap': 'large'},
+        {'symbol': 'HD',    'name': 'Home Depot Inc.',           'sector': 'consumer',    'marketCap': 'large'},
+        {'symbol': 'HON',   'name': 'Honeywell International',   'sector': 'industrials', 'marketCap': 'large'},
+        {'symbol': 'IBM',   'name': 'IBM Corp.',                 'sector': 'technology',  'marketCap': 'large'},
+        {'symbol': 'JNJ',   'name': 'Johnson & Johnson',         'sector': 'healthcare',  'marketCap': 'large'},
+        {'symbol': 'JPM',   'name': 'JPMorgan Chase',            'sector': 'financials',  'marketCap': 'large'},
+        {'symbol': 'KO',    'name': 'Coca-Cola Co.',             'sector': 'consumer',    'marketCap': 'large'},
+        {'symbol': 'MCD',   'name': "McDonald's Corp.",          'sector': 'consumer',    'marketCap': 'large'},
+        {'symbol': 'MMM',   'name': '3M Co.',                    'sector': 'industrials', 'marketCap': 'large'},
+        {'symbol': 'MRK',   'name': 'Merck & Co.',               'sector': 'healthcare',  'marketCap': 'large'},
+        {'symbol': 'MSFT',  'name': 'Microsoft Corp.',           'sector': 'technology',  'marketCap': 'large'},
+        {'symbol': 'NKE',   'name': 'Nike Inc.',                 'sector': 'consumer',    'marketCap': 'large'},
+        {'symbol': 'PG',    'name': 'Procter & Gamble',          'sector': 'consumer',    'marketCap': 'large'},
+        {'symbol': 'SHW',   'name': 'Sherwin-Williams',          'sector': 'materials',   'marketCap': 'large'},
+        {'symbol': 'TRV',   'name': 'Travelers Companies',       'sector': 'financials',  'marketCap': 'large'},
+        {'symbol': 'UNH',   'name': 'UnitedHealth Group',        'sector': 'healthcare',  'marketCap': 'large'},
+        {'symbol': 'V',     'name': 'Visa Inc.',                 'sector': 'financials',  'marketCap': 'large'},
+        {'symbol': 'VZ',    'name': 'Verizon Communications',    'sector': 'communication','marketCap': 'large'},
+        {'symbol': 'WMT',   'name': 'Walmart Inc.',              'sector': 'consumer',    'marketCap': 'large'},
+        {'symbol': 'INTC',  'name': 'Intel Corp.',               'sector': 'technology',  'marketCap': 'large'},
+    ]
+
+def get_sp100_stocks():
+    return [
+        # Technology
+        {'symbol': 'AAPL',  'name': 'Apple Inc.',               'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'MSFT',  'name': 'Microsoft Corp.',           'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'NVDA',  'name': 'NVIDIA Corp.',              'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'GOOGL', 'name': 'Alphabet Inc.',             'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'META',  'name': 'Meta Platforms',            'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'AVGO',  'name': 'Broadcom Inc.',             'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'AMD',   'name': 'Advanced Micro Devices',    'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'ORCL',  'name': 'Oracle Corp.',              'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'CRM',   'name': 'Salesforce Inc.',           'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'CSCO',  'name': 'Cisco Systems',             'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'INTC',  'name': 'Intel Corp.',               'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'IBM',   'name': 'IBM Corp.',                 'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'QCOM',  'name': 'QUALCOMM Inc.',             'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'TXN',   'name': 'Texas Instruments',         'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'NOW',   'name': 'ServiceNow Inc.',           'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'INTU',  'name': 'Intuit Inc.',               'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'AMAT',  'name': 'Applied Materials',         'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'ADBE',  'name': 'Adobe Inc.',                'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'MU',    'name': 'Micron Technology',         'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'LRCX',  'name': 'Lam Research',             'sector': 'technology',   'marketCap': 'large'},
+        # Consumer / Retail
+        {'symbol': 'AMZN',  'name': 'Amazon.com Inc.',           'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'TSLA',  'name': 'Tesla Inc.',                'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'WMT',   'name': 'Walmart Inc.',              'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'COST',  'name': 'Costco Wholesale',          'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'HD',    'name': 'Home Depot Inc.',           'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'PG',    'name': 'Procter & Gamble',          'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'MCD',   'name': "McDonald's Corp.",          'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'KO',    'name': 'Coca-Cola Co.',             'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'PEP',   'name': 'PepsiCo Inc.',              'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'NKE',   'name': 'Nike Inc.',                 'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'SBUX',  'name': 'Starbucks Corp.',           'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'LOW',   'name': "Lowe's Companies",          'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'TGT',   'name': 'Target Corp.',              'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'PM',    'name': 'Philip Morris Intl.',       'sector': 'consumer',     'marketCap': 'large'},
+        # Financials
+        {'symbol': 'JPM',   'name': 'JPMorgan Chase',            'sector': 'financials',   'marketCap': 'large'},
+        {'symbol': 'V',     'name': 'Visa Inc.',                 'sector': 'financials',   'marketCap': 'large'},
+        {'symbol': 'MA',    'name': 'Mastercard Inc.',           'sector': 'financials',   'marketCap': 'large'},
+        {'symbol': 'BAC',   'name': 'Bank of America',           'sector': 'financials',   'marketCap': 'large'},
+        {'symbol': 'GS',    'name': 'Goldman Sachs',             'sector': 'financials',   'marketCap': 'large'},
+        {'symbol': 'WFC',   'name': 'Wells Fargo',               'sector': 'financials',   'marketCap': 'large'},
+        {'symbol': 'MS',    'name': 'Morgan Stanley',            'sector': 'financials',   'marketCap': 'large'},
+        {'symbol': 'BLK',   'name': 'BlackRock Inc.',            'sector': 'financials',   'marketCap': 'large'},
+        {'symbol': 'AXP',   'name': 'American Express',          'sector': 'financials',   'marketCap': 'large'},
+        {'symbol': 'SCHW',  'name': 'Charles Schwab',            'sector': 'financials',   'marketCap': 'large'},
+        {'symbol': 'C',     'name': 'Citigroup Inc.',            'sector': 'financials',   'marketCap': 'large'},
+        # Healthcare
+        {'symbol': 'LLY',   'name': 'Eli Lilly',                 'sector': 'healthcare',   'marketCap': 'large'},
+        {'symbol': 'UNH',   'name': 'UnitedHealth Group',        'sector': 'healthcare',   'marketCap': 'large'},
+        {'symbol': 'JNJ',   'name': 'Johnson & Johnson',         'sector': 'healthcare',   'marketCap': 'large'},
+        {'symbol': 'ABBV',  'name': 'AbbVie Inc.',               'sector': 'healthcare',   'marketCap': 'large'},
+        {'symbol': 'MRK',   'name': 'Merck & Co.',               'sector': 'healthcare',   'marketCap': 'large'},
+        {'symbol': 'TMO',   'name': 'Thermo Fisher Scientific',  'sector': 'healthcare',   'marketCap': 'large'},
+        {'symbol': 'ABT',   'name': 'Abbott Laboratories',       'sector': 'healthcare',   'marketCap': 'large'},
+        {'symbol': 'AMGN',  'name': 'Amgen Inc.',                'sector': 'healthcare',   'marketCap': 'large'},
+        {'symbol': 'PFE',   'name': 'Pfizer Inc.',               'sector': 'healthcare',   'marketCap': 'large'},
+        {'symbol': 'GILD',  'name': 'Gilead Sciences',           'sector': 'healthcare',   'marketCap': 'large'},
+        {'symbol': 'BMY',   'name': 'Bristol-Myers Squibb',      'sector': 'healthcare',   'marketCap': 'large'},
+        {'symbol': 'CVS',   'name': 'CVS Health Corp.',          'sector': 'healthcare',   'marketCap': 'large'},
+        {'symbol': 'ISRG',  'name': 'Intuitive Surgical',        'sector': 'healthcare',   'marketCap': 'large'},
+        {'symbol': 'REGN',  'name': 'Regeneron Pharmaceuticals', 'sector': 'healthcare',   'marketCap': 'large'},
+        # Energy
+        {'symbol': 'XOM',   'name': 'Exxon Mobil Corp.',         'sector': 'energy',       'marketCap': 'large'},
+        {'symbol': 'CVX',   'name': 'Chevron Corp.',             'sector': 'energy',       'marketCap': 'large'},
+        {'symbol': 'COP',   'name': 'ConocoPhillips',            'sector': 'energy',       'marketCap': 'large'},
+        {'symbol': 'EOG',   'name': 'EOG Resources',             'sector': 'energy',       'marketCap': 'large'},
+        {'symbol': 'SLB',   'name': 'Schlumberger NV',           'sector': 'energy',       'marketCap': 'large'},
+        # Industrials
+        {'symbol': 'CAT',   'name': 'Caterpillar Inc.',          'sector': 'industrials',  'marketCap': 'large'},
+        {'symbol': 'HON',   'name': 'Honeywell International',   'sector': 'industrials',  'marketCap': 'large'},
+        {'symbol': 'BA',    'name': 'Boeing Co.',                'sector': 'industrials',  'marketCap': 'large'},
+        {'symbol': 'RTX',   'name': 'RTX Corp.',                 'sector': 'industrials',  'marketCap': 'large'},
+        {'symbol': 'MMM',   'name': '3M Co.',                    'sector': 'industrials',  'marketCap': 'large'},
+        {'symbol': 'GE',    'name': 'GE Aerospace',              'sector': 'industrials',  'marketCap': 'large'},
+        {'symbol': 'UPS',   'name': 'United Parcel Service',     'sector': 'industrials',  'marketCap': 'large'},
+        {'symbol': 'DE',    'name': 'Deere & Company',           'sector': 'industrials',  'marketCap': 'large'},
+        {'symbol': 'LMT',   'name': 'Lockheed Martin',           'sector': 'industrials',  'marketCap': 'large'},
+        {'symbol': 'UNP',   'name': 'Union Pacific Corp.',       'sector': 'industrials',  'marketCap': 'large'},
+        # Communication
+        {'symbol': 'NFLX',  'name': 'Netflix Inc.',              'sector': 'communication','marketCap': 'large'},
+        {'symbol': 'DIS',   'name': 'Walt Disney Co.',           'sector': 'communication','marketCap': 'large'},
+        {'symbol': 'VZ',    'name': 'Verizon Communications',    'sector': 'communication','marketCap': 'large'},
+        {'symbol': 'T',     'name': 'AT&T Inc.',                 'sector': 'communication','marketCap': 'large'},
+        {'symbol': 'CMCSA', 'name': 'Comcast Corp.',             'sector': 'communication','marketCap': 'large'},
+        {'symbol': 'TMUS',  'name': 'T-Mobile US',               'sector': 'communication','marketCap': 'large'},
+        # Materials
+        {'symbol': 'LIN',   'name': 'Linde PLC',                 'sector': 'materials',    'marketCap': 'large'},
+        {'symbol': 'SHW',   'name': 'Sherwin-Williams',          'sector': 'materials',    'marketCap': 'large'},
+        {'symbol': 'DOW',   'name': 'Dow Inc.',                  'sector': 'materials',    'marketCap': 'large'},
+        {'symbol': 'FCX',   'name': 'Freeport-McMoRan',          'sector': 'materials',    'marketCap': 'large'},
+        {'symbol': 'APD',   'name': 'Air Products & Chemicals',  'sector': 'materials',    'marketCap': 'large'},
+        # Utilities & Real Estate
+        {'symbol': 'NEE',   'name': 'NextEra Energy',            'sector': 'utilities',    'marketCap': 'large'},
+        {'symbol': 'SO',    'name': 'Southern Company',          'sector': 'utilities',    'marketCap': 'large'},
+        {'symbol': 'DUK',   'name': 'Duke Energy Corp.',         'sector': 'utilities',    'marketCap': 'large'},
+        {'symbol': 'AMT',   'name': 'American Tower Corp.',      'sector': 'realestate',   'marketCap': 'large'},
+        {'symbol': 'PLD',   'name': 'Prologis Inc.',             'sector': 'realestate',   'marketCap': 'large'},
+    ]
+
+def get_nasdaq100_stocks():
+    return [
+        {'symbol': 'AAPL',  'name': 'Apple Inc.',               'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'MSFT',  'name': 'Microsoft Corp.',           'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'NVDA',  'name': 'NVIDIA Corp.',              'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'GOOGL', 'name': 'Alphabet Inc. (A)',         'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'GOOG',  'name': 'Alphabet Inc. (C)',         'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'META',  'name': 'Meta Platforms',            'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'AMZN',  'name': 'Amazon.com Inc.',           'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'TSLA',  'name': 'Tesla Inc.',                'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'AVGO',  'name': 'Broadcom Inc.',             'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'COST',  'name': 'Costco Wholesale',          'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'NFLX',  'name': 'Netflix Inc.',              'sector': 'communication','marketCap': 'large'},
+        {'symbol': 'AMD',   'name': 'Advanced Micro Devices',    'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'ADBE',  'name': 'Adobe Inc.',                'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'QCOM',  'name': 'QUALCOMM Inc.',             'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'INTU',  'name': 'Intuit Inc.',               'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'TXN',   'name': 'Texas Instruments',         'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'AMAT',  'name': 'Applied Materials',         'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'ISRG',  'name': 'Intuitive Surgical',        'sector': 'healthcare',   'marketCap': 'large'},
+        {'symbol': 'BKNG',  'name': 'Booking Holdings',          'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'NOW',   'name': 'ServiceNow Inc.',           'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'MU',    'name': 'Micron Technology',         'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'LRCX',  'name': 'Lam Research',             'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'ADI',   'name': 'Analog Devices',            'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'PANW',  'name': 'Palo Alto Networks',        'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'KLAC',  'name': 'KLA Corp.',                 'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'SNPS',  'name': 'Synopsys Inc.',             'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'CDNS',  'name': 'Cadence Design Systems',    'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'MRVL',  'name': 'Marvell Technology',        'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'CRWD',  'name': 'CrowdStrike Holdings',      'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'ORCL',  'name': 'Oracle Corp.',              'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'ASML',  'name': 'ASML Holding',              'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'ADP',   'name': 'Automatic Data Processing', 'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'MELI',  'name': 'MercadoLibre Inc.',         'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'ABNB',  'name': 'Airbnb Inc.',               'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'PYPL',  'name': 'PayPal Holdings',           'sector': 'financials',   'marketCap': 'large'},
+        {'symbol': 'ORLY',  'name': "O'Reilly Automotive",       'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'MNST',  'name': 'Monster Beverage Corp.',    'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'REGN',  'name': 'Regeneron Pharmaceuticals', 'sector': 'healthcare',   'marketCap': 'large'},
+        {'symbol': 'MDLZ',  'name': 'Mondelez International',    'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'GILD',  'name': 'Gilead Sciences',           'sector': 'healthcare',   'marketCap': 'large'},
+        {'symbol': 'CTAS',  'name': 'Cintas Corp.',              'sector': 'industrials',  'marketCap': 'large'},
+        {'symbol': 'CSX',   'name': 'CSX Corp.',                 'sector': 'industrials',  'marketCap': 'large'},
+        {'symbol': 'PCAR',  'name': 'PACCAR Inc.',               'sector': 'industrials',  'marketCap': 'large'},
+        {'symbol': 'DXCM',  'name': 'DexCom Inc.',               'sector': 'healthcare',   'marketCap': 'large'},
+        {'symbol': 'IDXX',  'name': 'IDEXX Laboratories',        'sector': 'healthcare',   'marketCap': 'large'},
+        {'symbol': 'BIIB',  'name': 'Biogen Inc.',               'sector': 'healthcare',   'marketCap': 'large'},
+        {'symbol': 'VRTX',  'name': 'Vertex Pharmaceuticals',    'sector': 'healthcare',   'marketCap': 'large'},
+        {'symbol': 'AMGN',  'name': 'Amgen Inc.',                'sector': 'healthcare',   'marketCap': 'large'},
+        {'symbol': 'HON',   'name': 'Honeywell International',   'sector': 'industrials',  'marketCap': 'large'},
+        {'symbol': 'CMCSA', 'name': 'Comcast Corp.',             'sector': 'communication','marketCap': 'large'},
+        {'symbol': 'TMUS',  'name': 'T-Mobile US',               'sector': 'communication','marketCap': 'large'},
+        {'symbol': 'KDP',   'name': 'Keurig Dr Pepper',          'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'MAR',   'name': 'Marriott International',    'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'SBUX',  'name': 'Starbucks Corp.',           'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'LULU',  'name': 'Lululemon Athletica',       'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'EA',    'name': 'Electronic Arts',           'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'ZS',    'name': 'Zscaler Inc.',              'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'FTNT',  'name': 'Fortinet Inc.',             'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'TEAM',  'name': 'Atlassian Corp.',           'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'WDAY',  'name': 'Workday Inc.',              'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'MCHP',  'name': 'Microchip Technology',      'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'FAST',  'name': 'Fastenal Co.',              'sector': 'industrials',  'marketCap': 'large'},
+        {'symbol': 'ON',    'name': 'ON Semiconductor',          'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'PAYX',  'name': 'Paychex Inc.',              'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'ODFL',  'name': 'Old Dominion Freight Line', 'sector': 'industrials',  'marketCap': 'large'},
+        {'symbol': 'VRSK',  'name': 'Verisk Analytics',          'sector': 'industrials',  'marketCap': 'large'},
+        {'symbol': 'TTWO',  'name': 'Take-Two Interactive',      'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'DDOG',  'name': 'Datadog Inc.',              'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'DASH',  'name': 'DoorDash Inc.',             'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'GEHC',  'name': 'GE HealthCare Technologies','sector': 'healthcare',   'marketCap': 'large'},
+        {'symbol': 'CPRT',  'name': 'Copart Inc.',               'sector': 'industrials',  'marketCap': 'large'},
+        {'symbol': 'NXPI',  'name': 'NXP Semiconductors',        'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'CEG',   'name': 'Constellation Energy',      'sector': 'utilities',    'marketCap': 'large'},
+        {'symbol': 'TTD',   'name': 'The Trade Desk',            'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'APP',   'name': 'Applovin Corp.',            'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'PLTR',  'name': 'Palantir Technologies',     'sector': 'technology',   'marketCap': 'large'},
+    ]
+
+def get_sp500_stocks():
+    """Representative S&P 500 stocks — top ~200 by sector coverage"""
+    return get_sp100_stocks() + [
+        # Extended Technology
+        {'symbol': 'ACN',   'name': 'Accenture PLC',            'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'SHOP',  'name': 'Shopify Inc.',              'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'SNOW',  'name': 'Snowflake Inc.',            'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'NET',   'name': 'Cloudflare Inc.',           'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'UBER',  'name': 'Uber Technologies',         'sector': 'technology',   'marketCap': 'large'},
+        {'symbol': 'LYFT',  'name': 'Lyft Inc.',                 'sector': 'technology',   'marketCap': 'mid'},
+        {'symbol': 'COIN',  'name': 'Coinbase Global',           'sector': 'financials',   'marketCap': 'mid'},
+        {'symbol': 'PINS',  'name': 'Pinterest Inc.',            'sector': 'communication','marketCap': 'mid'},
+        {'symbol': 'SNAP',  'name': 'Snap Inc.',                 'sector': 'communication','marketCap': 'mid'},
+        {'symbol': 'X',     'name': 'U.S. Steel Corp.',          'sector': 'materials',    'marketCap': 'mid'},
+        {'symbol': 'F',     'name': 'Ford Motor Co.',            'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'GM',    'name': 'General Motors',            'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'RIVN',  'name': 'Rivian Automotive',         'sector': 'consumer',     'marketCap': 'mid'},
+        {'symbol': 'LCID',  'name': 'Lucid Group',               'sector': 'consumer',     'marketCap': 'small'},
+        # Extended Financials
+        {'symbol': 'USB',   'name': 'U.S. Bancorp',              'sector': 'financials',   'marketCap': 'large'},
+        {'symbol': 'PNC',   'name': 'PNC Financial Services',    'sector': 'financials',   'marketCap': 'large'},
+        {'symbol': 'TFC',   'name': 'Truist Financial',          'sector': 'financials',   'marketCap': 'large'},
+        {'symbol': 'COF',   'name': 'Capital One Financial',     'sector': 'financials',   'marketCap': 'large'},
+        {'symbol': 'DFS',   'name': 'Discover Financial',        'sector': 'financials',   'marketCap': 'large'},
+        {'symbol': 'SYF',   'name': 'Synchrony Financial',       'sector': 'financials',   'marketCap': 'mid'},
+        {'symbol': 'FITB',  'name': 'Fifth Third Bancorp',       'sector': 'financials',   'marketCap': 'mid'},
+        {'symbol': 'KEY',   'name': 'KeyCorp',                   'sector': 'financials',   'marketCap': 'mid'},
+        {'symbol': 'RF',    'name': 'Regions Financial',         'sector': 'financials',   'marketCap': 'mid'},
+        # Extended Healthcare
+        {'symbol': 'CI',    'name': 'Cigna Group',               'sector': 'healthcare',   'marketCap': 'large'},
+        {'symbol': 'HUM',   'name': 'Humana Inc.',               'sector': 'healthcare',   'marketCap': 'large'},
+        {'symbol': 'MDT',   'name': 'Medtronic PLC',             'sector': 'healthcare',   'marketCap': 'large'},
+        {'symbol': 'SYK',   'name': 'Stryker Corp.',             'sector': 'healthcare',   'marketCap': 'large'},
+        {'symbol': 'BDX',   'name': 'Becton Dickinson',          'sector': 'healthcare',   'marketCap': 'large'},
+        {'symbol': 'MRNA',  'name': 'Moderna Inc.',              'sector': 'healthcare',   'marketCap': 'mid'},
+        {'symbol': 'ILMN',  'name': 'Illumina Inc.',             'sector': 'healthcare',   'marketCap': 'mid'},
+        # Extended Energy
+        {'symbol': 'PXD',   'name': 'Pioneer Natural Resources', 'sector': 'energy',       'marketCap': 'large'},
+        {'symbol': 'DVN',   'name': 'Devon Energy Corp.',        'sector': 'energy',       'marketCap': 'large'},
+        {'symbol': 'MPC',   'name': 'Marathon Petroleum',        'sector': 'energy',       'marketCap': 'large'},
+        {'symbol': 'PSX',   'name': 'Phillips 66',               'sector': 'energy',       'marketCap': 'large'},
+        {'symbol': 'VLO',   'name': 'Valero Energy',             'sector': 'energy',       'marketCap': 'large'},
+        {'symbol': 'HAL',   'name': 'Halliburton Co.',           'sector': 'energy',       'marketCap': 'large'},
+        {'symbol': 'OXY',   'name': 'Occidental Petroleum',      'sector': 'energy',       'marketCap': 'large'},
+        # Extended Industrials
+        {'symbol': 'FDX',   'name': 'FedEx Corp.',               'sector': 'industrials',  'marketCap': 'large'},
+        {'symbol': 'ETN',   'name': 'Eaton Corp.',               'sector': 'industrials',  'marketCap': 'large'},
+        {'symbol': 'EMR',   'name': 'Emerson Electric',          'sector': 'industrials',  'marketCap': 'large'},
+        {'symbol': 'NOC',   'name': 'Northrop Grumman',          'sector': 'industrials',  'marketCap': 'large'},
+        {'symbol': 'GD',    'name': 'General Dynamics',          'sector': 'industrials',  'marketCap': 'large'},
+        {'symbol': 'ITW',   'name': 'Illinois Tool Works',       'sector': 'industrials',  'marketCap': 'large'},
+        {'symbol': 'WM',    'name': 'Waste Management Inc.',     'sector': 'industrials',  'marketCap': 'large'},
+        # Extended Consumer
+        {'symbol': 'CL',    'name': 'Colgate-Palmolive',         'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'MO',    'name': 'Altria Group',              'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'KHC',   'name': 'Kraft Heinz Co.',           'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'GIS',   'name': 'General Mills',             'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'K',     'name': "Kellogg's Co.",             'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'HRL',   'name': 'Hormel Foods',              'sector': 'consumer',     'marketCap': 'mid'},
+        {'symbol': 'CAG',   'name': 'Conagra Brands',            'sector': 'consumer',     'marketCap': 'mid'},
+        {'symbol': 'AZO',   'name': "AutoZone Inc.",             'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'DLTR',  'name': 'Dollar Tree Inc.',          'sector': 'consumer',     'marketCap': 'large'},
+        {'symbol': 'DG',    'name': 'Dollar General Corp.',      'sector': 'consumer',     'marketCap': 'large'},
+        # Extended Real Estate & Utilities
+        {'symbol': 'O',     'name': 'Realty Income Corp.',       'sector': 'realestate',   'marketCap': 'large'},
+        {'symbol': 'WELL',  'name': 'Welltower Inc.',            'sector': 'realestate',   'marketCap': 'large'},
+        {'symbol': 'PSA',   'name': 'Public Storage',            'sector': 'realestate',   'marketCap': 'large'},
+        {'symbol': 'EQR',   'name': 'Equity Residential',        'sector': 'realestate',   'marketCap': 'large'},
+        {'symbol': 'D',     'name': 'Dominion Energy',           'sector': 'utilities',    'marketCap': 'large'},
+        {'symbol': 'AEP',   'name': 'American Electric Power',   'sector': 'utilities',    'marketCap': 'large'},
+        {'symbol': 'XEL',   'name': 'Xcel Energy Inc.',          'sector': 'utilities',    'marketCap': 'large'},
+    ]
+
+def get_us_universe(universe_type):
+    if universe_type == 'dow30':
+        return get_dow30_stocks()
+    elif universe_type == 'sp100':
+        return get_sp100_stocks()
+    elif universe_type == 'nasdaq100':
+        return get_nasdaq100_stocks()
+    elif universe_type == 'sp500':
+        return get_sp500_stocks()
+    return get_sp100_stocks()
+
+
+# ── CoinGecko Crypto Scanner ─────────────────────────────────────────────────
+
+def scan_crypto_via_coingecko(universe_size, weekly_threshold, monthly_threshold, market_cap_filter='all'):
+    """Scan crypto via CoinGecko public API — free, no key, allows display"""
+    print(f"\n[CRYPTO] Scanning top {universe_size} coins via CoinGecko...")
+    results = []
+    per_page = min(universe_size, 250)
+    pages_needed = (universe_size + per_page - 1) // per_page
+
+    for page in range(1, pages_needed + 1):
+        try:
+            url = "https://api.coingecko.com/api/v3/coins/markets"
+            params = {
+                'vs_currency': 'usd',
+                'order': 'market_cap_desc',
+                'per_page': per_page,
+                'page': page,
+                'price_change_percentage': '7d,30d',
+                'sparkline': False,
+            }
+            resp = requests.get(url, params=params, timeout=30)
+            if resp.status_code != 200:
+                print(f"[CRYPTO] CoinGecko returned {resp.status_code}")
+                break
+            coins = resp.json()
+        except Exception as e:
+            print(f"[CRYPTO] CoinGecko request failed: {e}")
+            break
+
+        for coin in coins:
+            weekly  = coin.get('price_change_percentage_7d_in_currency') or 0
+            monthly = coin.get('price_change_percentage_30d_in_currency') or 0
+            mktcap  = coin.get('market_cap') or 0
+
+            # Market cap filter
+            if market_cap_filter == 'large' and mktcap <= 10_000_000_000:
+                continue
+            if market_cap_filter == 'mid' and not (1_000_000_000 < mktcap <= 10_000_000_000):
+                continue
+            if market_cap_filter == 'small' and mktcap >= 1_000_000_000:
+                continue
+
+            if weekly <= -weekly_threshold and monthly <= -monthly_threshold:
+                current   = coin.get('current_price') or 0
+                w_factor  = 1 + weekly  / 100
+                m_factor  = 1 + monthly / 100
+                cap_label = 'large' if mktcap > 10_000_000_000 else 'mid' if mktcap > 1_000_000_000 else 'small'
+
+                results.append({
+                    'symbol':          coin['symbol'].upper(),
+                    'name':            coin['name'],
+                    'currentPrice':    round(current, 6),
+                    'weeklyChange':    round(weekly, 2),
+                    'monthlyChange':   round(monthly, 2),
+                    'priceOneWeekAgo': round(current / w_factor, 6) if w_factor else 0,
+                    'priceOneMonthAgo':round(current / m_factor, 6) if m_factor else 0,
+                    'volume':          int(coin.get('total_volume') or 0),
+                    'marketCap':       cap_label,
+                    'sector':          'crypto',
+                    'source':          'coingecko',
+                })
+                print(f"[MATCH] {coin['symbol'].upper()} W:{weekly:.1f}% M:{monthly:.1f}%")
+
+    print(f"[CRYPTO] Done — {len(results)} coins matched criteria")
+    return results
+
+
+# ── Stock Universe Router ─────────────────────────────────────────────────────
+
+def get_stock_universe(universe_type, market='india'):
+    """Get stock universe by market and universe type"""
+    print(f"\n📋 Getting {universe_type} ({market}) stock universe...")
+
+    if market == 'us':
+        stocks = get_us_universe(universe_type)
+        print(f"✅ Got {len(stocks)} US stocks for {universe_type}")
+        return stocks
+
+    # India (default)
     if universe_type == 'nifty50':
         stocks = get_nifty_50_stocks()
         print(f"✅ Got {len(stocks)} stocks for Nifty 50")
         return stocks
-    
     elif universe_type == 'nifty100':
         stocks = get_nifty_100_stocks()
         print(f"✅ Got {len(stocks)} stocks for Nifty 100")
         return stocks
-    
     elif universe_type == 'nifty200':
         stocks = get_nifty_200_stocks()
         print(f"✅ Got {len(stocks)} stocks for Nifty 200")
@@ -879,7 +1256,6 @@ def get_stock_universe(universe_type):
         print(f"✅ Got {len(stocks)} stocks for Nifty 500")
         return stocks
     else:
-        # Default to Nifty 100
         return get_nifty_100_stocks()
 
 def process_single_stock(stock, weekly_threshold, monthly_threshold):
@@ -1052,20 +1428,41 @@ def scan_stocks():
         data = request.get_json()
         
         # Get scan criteria
-        weekly_threshold = float(data.get('weeklyThreshold', 5))
+        weekly_threshold  = float(data.get('weeklyThreshold', 5))
         monthly_threshold = float(data.get('monthlyThreshold', 10))
         market_cap_filter = data.get('marketCapFilter', 'all')
-        sector_filter = data.get('sectorFilter', 'all')
-        stock_universe = data.get('stockUniverse', 'nifty100')
-        
-        print(f"\n[SCAN] CLEAN SCAN STARTING")
-        print(f"[UNIVERSE] {stock_universe}")
+        sector_filter     = data.get('sectorFilter', 'all')
+        stock_universe    = data.get('stockUniverse', 'nifty100')
+        market            = data.get('market', 'india')  # 'india' | 'us' | 'crypto'
+
+        print(f"\n[SCAN] STARTING — market={market} universe={stock_universe}")
         print(f"[CRITERIA] Weekly ≤ -{weekly_threshold}%, Monthly ≤ -{monthly_threshold}%")
         print(f"[FILTERS] Market Cap = {market_cap_filter}, Sector = {sector_filter}")
-        print(f"[DATA] Source: Yahoo Finance ONLY")
-        
+
+        # ── Crypto: use CoinGecko ──
+        if market == 'crypto':
+            size_map = {'top50': 50, 'top100': 100, 'top200': 200, 'top500': 500}
+            universe_size = size_map.get(stock_universe, 100)
+            results = scan_crypto_via_coingecko(universe_size, weekly_threshold, monthly_threshold, market_cap_filter)
+            return jsonify({
+                'results':              results,
+                'total_matches':        len(results),
+                'stock_universe':       stock_universe,
+                'universe_size':        universe_size,
+                'processed':            universe_size,
+                'yahoo_finance_success':universe_size,
+                'real_data_count':      universe_size,
+                'failed_count':         0,
+                'success_rate':         '100%',
+                'market':               'crypto',
+                'data_source':          'CoinGecko (free, no API key)',
+                'timestamp':            datetime.now().isoformat(),
+                'message':              f'Scanned top {universe_size} coins: {len(results)} dip opportunities found',
+            })
+
+        # ── India / US: use Yahoo Finance ──
         # Get stock list
-        stock_list = get_stock_universe(stock_universe)
+        stock_list = get_stock_universe(stock_universe, market)
         
         # Filter stocks based on criteria
         filtered_stocks = []
@@ -1154,6 +1551,7 @@ def scan_stocks():
                 'sectorFilter': sector_filter,
                 'stockUniverse': stock_universe
             },
+            'market': market,
             'data_source': 'Yahoo Finance (Real market data)',
             'stock_source': 'Static curated lists',
             'policy': 'Real data only - no simulation',

@@ -170,6 +170,41 @@
         margin-bottom: 11px;
       }
 
+      /* ── Market Tabs ── */
+      .market-tabs {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 20px;
+      }
+
+      .market-tab {
+        padding: 7px 18px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--text-2);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        font-family: inherit;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .market-tab:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        background: var(--primary-light);
+      }
+
+      .market-tab.active {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: white;
+      }
+
       /* ── Universe Tabs ── */
       .universe-tabs {
         display: flex;
@@ -637,21 +672,15 @@
 
       <!-- Controls -->
       <div class="controls-card">
-        <div class="section-label">Stock Universe</div>
-        <div class="universe-tabs">
-          <button class="universe-tab active" onclick="selectUniverse(this, 'nifty50')">
-            NIFTY 50 <span class="stock-count">50</span>
-          </button>
-          <button class="universe-tab" onclick="selectUniverse(this, 'nifty100')">
-            NIFTY 100 <span class="stock-count">100</span>
-          </button>
-          <button class="universe-tab" onclick="selectUniverse(this, 'nifty200')">
-            NIFTY 200 <span class="stock-count">200</span>
-          </button>
-          <button class="universe-tab" onclick="selectUniverse(this, 'nifty500')">
-            Extended <span class="stock-count">400+</span>
-          </button>
+        <div class="section-label">Market</div>
+        <div class="market-tabs">
+          <button class="market-tab active" onclick="selectMarket(this, 'india')">🇮🇳 India</button>
+          <button class="market-tab" onclick="selectMarket(this, 'us')">🇺🇸 United States</button>
+          <button class="market-tab" onclick="selectMarket(this, 'crypto')">₿ Crypto</button>
         </div>
+
+        <div class="section-label">Stock Universe</div>
+        <div class="universe-tabs" id="universeTabs"></div>
 
         <div class="section-label">Screening Filters</div>
         <div class="filters-row">
@@ -690,19 +719,9 @@
               <option value="small">Small Cap</option>
             </select>
           </div>
-          <div class="filter-item">
+          <div class="filter-item" id="sectorFilterItem">
             <label class="filter-label" for="sectorFilter">Sector</label>
-            <select class="filter-input" id="sectorFilter">
-              <option value="all">All Sectors</option>
-              <option value="banking">Banking & Finance</option>
-              <option value="it">Information Technology</option>
-              <option value="healthcare">Healthcare & Pharma</option>
-              <option value="auto">Automotive</option>
-              <option value="fmcg">FMCG & Consumer</option>
-              <option value="energy">Energy & Power</option>
-              <option value="metals">Metals & Mining</option>
-              <option value="cement">Cement & Construction</option>
-            </select>
+            <select class="filter-input" id="sectorFilter"></select>
           </div>
           <button class="scan-btn" id="scanBtn" onclick="scanStocks()">
             <span id="buttonText">Scan Market</span>
@@ -791,42 +810,137 @@
 
     <script>
       const getApiBase = () => {
-        const hostname = window.location.hostname;
-        if (hostname === "localhost" || hostname === "127.0.0.1") {
-          return "http://127.0.0.1:5001";
-        }
-        return "https://buy-the-dip-0vzk.onrender.com";
+        const h = window.location.hostname;
+        return (h === "localhost" || h === "127.0.0.1")
+          ? "http://127.0.0.1:5001"
+          : "https://buy-the-dip-0vzk.onrender.com";
       };
 
       const API_BASE = getApiBase();
-      let scanResults = [];
+      let scanResults    = [];
+      let selectedMarket = "india";
       let selectedUniverse = "nifty50";
 
+      // ── Config ──────────────────────────────────────────────────────────────
+
+      const UNIVERSE_CONFIG = {
+        india: [
+          { value: "nifty50",   label: "NIFTY 50",   count: "50"   },
+          { value: "nifty100",  label: "NIFTY 100",  count: "100"  },
+          { value: "nifty200",  label: "NIFTY 200",  count: "200"  },
+          { value: "nifty500",  label: "Extended",   count: "400+" },
+        ],
+        us: [
+          { value: "dow30",     label: "DOW 30",      count: "30"  },
+          { value: "sp100",     label: "S&P 100",     count: "100" },
+          { value: "nasdaq100", label: "NASDAQ 100",  count: "100" },
+          { value: "sp500",     label: "S&P 500",     count: "500" },
+        ],
+        crypto: [
+          { value: "top50",     label: "Top 50",      count: "50"  },
+          { value: "top100",    label: "Top 100",     count: "100" },
+          { value: "top200",    label: "Top 200",     count: "200" },
+          { value: "top500",    label: "Top 500",     count: "500" },
+        ],
+      };
+
+      const SECTOR_OPTIONS = {
+        india: [
+          { value: "all",          label: "All Sectors"             },
+          { value: "banking",      label: "Banking & Finance"       },
+          { value: "it",           label: "Information Technology"  },
+          { value: "healthcare",   label: "Healthcare & Pharma"     },
+          { value: "auto",         label: "Automotive"              },
+          { value: "fmcg",         label: "FMCG & Consumer"         },
+          { value: "energy",       label: "Energy & Power"          },
+          { value: "metals",       label: "Metals & Mining"         },
+          { value: "cement",       label: "Cement & Construction"   },
+        ],
+        us: [
+          { value: "all",          label: "All Sectors"             },
+          { value: "technology",   label: "Technology"              },
+          { value: "healthcare",   label: "Healthcare"              },
+          { value: "financials",   label: "Financials"              },
+          { value: "consumer",     label: "Consumer"                },
+          { value: "energy",       label: "Energy"                  },
+          { value: "industrials",  label: "Industrials"             },
+          { value: "communication",label: "Communication"           },
+          { value: "materials",    label: "Materials"               },
+          { value: "utilities",    label: "Utilities"               },
+          { value: "realestate",   label: "Real Estate"             },
+        ],
+        crypto: null, // no sector filter for crypto
+      };
+
       const SECTOR_LABELS = {
-        banking: "Banking",
-        it: "IT",
-        healthcare: "Healthcare",
-        auto: "Auto",
-        fmcg: "FMCG",
-        energy: "Energy",
-        metals: "Metals",
-        cement: "Cement",
-        consumer: "Consumer",
-        telecom: "Telecom",
-        infrastructure: "Infra",
-        capital_goods: "Capital Goods",
+        // India
+        banking: "Banking", it: "IT", healthcare: "Healthcare", auto: "Auto",
+        fmcg: "FMCG", energy: "Energy", metals: "Metals", cement: "Cement",
+        consumer: "Consumer", telecom: "Telecom", infrastructure: "Infra",
+        capital_goods: "Capital Goods", realty: "Realty", chemicals: "Chemicals",
+        construction: "Construction", textiles: "Textiles", capital_goods: "Cap. Goods",
+        // US
+        technology: "Tech", financials: "Finance", industrials: "Industrial",
+        communication: "Comm.", materials: "Materials", utilities: "Utilities",
+        realestate: "Real Estate",
+        // Crypto
+        crypto: "Crypto",
       };
 
       const UNIVERSE_LABELS = {
-        nifty50: "Nifty 50",
-        nifty100: "Nifty 100",
-        nifty200: "Nifty 200",
-        nifty500: "Extended",
+        // India
+        nifty50: "Nifty 50", nifty100: "Nifty 100", nifty200: "Nifty 200", nifty500: "Extended",
+        // US
+        dow30: "DOW 30", sp100: "S&P 100", nasdaq100: "NASDAQ 100", sp500: "S&P 500",
+        // Crypto
+        top50: "Top 50", top100: "Top 100", top200: "Top 200", top500: "Top 500",
       };
 
+      const CURRENCY = { india: "₹", us: "$", crypto: "$" };
+
+      // ── Init ────────────────────────────────────────────────────────────────
+
       document.addEventListener("DOMContentLoaded", () => {
+        renderUniverseTabs("india");
+        renderSectorFilter("india");
         checkBackendConnection();
       });
+
+      // ── Market / Universe selection ─────────────────────────────────────────
+
+      function selectMarket(el, market) {
+        document.querySelectorAll(".market-tab").forEach(t => t.classList.remove("active"));
+        el.classList.add("active");
+        selectedMarket = market;
+        renderUniverseTabs(market);
+        renderSectorFilter(market);
+      }
+
+      function renderUniverseTabs(market) {
+        const container = document.getElementById("universeTabs");
+        const options = UNIVERSE_CONFIG[market];
+        selectedUniverse = options[0].value;
+        container.innerHTML = options.map((opt, i) => `
+          <button
+            class="universe-tab${i === 0 ? " active" : ""}"
+            onclick="selectUniverse(this, '${opt.value}')"
+          >${opt.label} <span class="stock-count">${opt.count}</span></button>
+        `).join("");
+      }
+
+      function renderSectorFilter(market) {
+        const wrapper = document.getElementById("sectorFilterItem");
+        const select  = document.getElementById("sectorFilter");
+        const options = SECTOR_OPTIONS[market];
+        if (!options) {
+          wrapper.style.display = "none";
+          return;
+        }
+        wrapper.style.display = "";
+        select.innerHTML = options.map(o =>
+          `<option value="${o.value}">${o.label}</option>`
+        ).join("");
+      }
 
       function selectUniverse(el, value) {
         document.querySelectorAll(".universe-tab").forEach(t => t.classList.remove("active"));
@@ -834,74 +948,73 @@
         selectedUniverse = value;
       }
 
+      // ── Backend connection ──────────────────────────────────────────────────
+
       async function checkBackendConnection() {
         try {
-          const res = await fetch(`${API_BASE}/health`, {
-            method: "GET",
-            headers: { Accept: "application/json" },
-          });
+          const res = await fetch(`${API_BASE}/health`, { headers: { Accept: "application/json" } });
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           const data = await res.json();
-          if (data.status === "healthy") {
-            updateStatus(true, `Connected · v${data.version || "1.0"}`);
-          }
+          if (data.status === "healthy") updateStatus(true, `Connected · v${data.version || "1.0"}`);
         } catch {
           updateStatus(false, "Service unavailable");
         }
       }
 
       function updateStatus(connected, message) {
-        const dot = document.getElementById("statusDot");
+        const dot  = document.getElementById("statusDot");
         const text = document.getElementById("statusText");
         dot.classList.remove("connected", "error");
-        if (connected) {
-          dot.classList.add("connected");
-        } else {
-          dot.classList.add("error");
-        }
+        dot.classList.add(connected ? "connected" : "error");
         text.textContent = message;
       }
 
+      // ── Scan ────────────────────────────────────────────────────────────────
+
       async function scanStocks() {
-        const btn = document.getElementById("scanBtn");
-        const btnText = document.getElementById("buttonText");
-        const loadingDiv = document.getElementById("loadingDiv");
-        const resultsDiv = document.getElementById("resultsDiv");
-        const errorDiv = document.getElementById("errorDiv");
+        const btn          = document.getElementById("scanBtn");
+        const btnText      = document.getElementById("buttonText");
+        const loadingDiv   = document.getElementById("loadingDiv");
+        const resultsDiv   = document.getElementById("resultsDiv");
+        const errorDiv     = document.getElementById("errorDiv");
         const noResultsDiv = document.getElementById("noResultsDiv");
-        const initialMessage = document.getElementById("initialMessage");
-        const loadingText = document.getElementById("loadingText");
+        const initialMsg   = document.getElementById("initialMessage");
+        const loadingText  = document.getElementById("loadingText");
 
         btn.disabled = true;
         btnText.textContent = "Scanning...";
-        loadingDiv.style.display = "block";
-        resultsDiv.style.display = "none";
-        errorDiv.style.display = "none";
+        loadingDiv.style.display   = "block";
+        resultsDiv.style.display   = "none";
+        errorDiv.style.display     = "none";
         noResultsDiv.style.display = "none";
-        initialMessage.style.display = "none";
+        initialMsg.style.display   = "none";
 
-        loadingText.textContent = `Scanning ${UNIVERSE_LABELS[selectedUniverse] || selectedUniverse} for dips...`;
+        const universeLabel = UNIVERSE_LABELS[selectedUniverse] || selectedUniverse;
+        const marketLabel   = { india: "Indian", us: "US", crypto: "Crypto" }[selectedMarket];
+        loadingText.textContent = `Scanning ${marketLabel} market — ${universeLabel}...`;
 
         try {
-          const criteria = {
-            weeklyThreshold: parseFloat(document.getElementById("weeklyThreshold").value),
+          const body = {
+            market:           selectedMarket,
+            stockUniverse:    selectedUniverse,
+            weeklyThreshold:  parseFloat(document.getElementById("weeklyThreshold").value),
             monthlyThreshold: parseFloat(document.getElementById("monthlyThreshold").value),
-            marketCapFilter: document.getElementById("marketCapFilter").value,
-            sectorFilter: document.getElementById("sectorFilter").value,
-            stockUniverse: selectedUniverse,
+            marketCapFilter:  document.getElementById("marketCapFilter").value,
+            sectorFilter:     SECTOR_OPTIONS[selectedMarket]
+                                ? document.getElementById("sectorFilter").value
+                                : "all",
           };
 
           const res = await fetch(`${API_BASE}/scan`, {
             method: "POST",
             headers: { "Content-Type": "application/json", Accept: "application/json" },
-            body: JSON.stringify(criteria),
+            body: JSON.stringify(body),
           });
 
           if (!res.ok) throw new Error(`Scan failed: ${res.status} ${res.statusText}`);
 
           const data = await res.json();
           scanResults = data.results;
-
           loadingDiv.style.display = "none";
 
           if (scanResults.length > 0) {
@@ -916,7 +1029,7 @@
 
         } catch (err) {
           loadingDiv.style.display = "none";
-          errorDiv.style.display = "block";
+          errorDiv.style.display   = "block";
           document.getElementById("errorText").textContent = err.message;
         } finally {
           btn.disabled = false;
@@ -924,14 +1037,17 @@
         }
       }
 
+      // ── Display results ──────────────────────────────────────────────────────
+
       function displayResults(results, scanData) {
-        const resultsCount = document.getElementById("resultsCount");
-        const scanStats = document.getElementById("scanStats");
-        const stockGrid = document.getElementById("stockGrid");
+        document.getElementById("resultsCount").textContent =
+          `${results.length} ${selectedMarket === "crypto" ? "coin" : "stock"}${results.length !== 1 ? "s" : ""} found`;
 
-        resultsCount.textContent = `${results.length} stock${results.length !== 1 ? "s" : ""} found`;
-
-        scanStats.innerHTML = `
+        document.getElementById("scanStats").innerHTML = `
+          <div class="stat-pill">
+            <div class="stat-pill-label">Market</div>
+            <div class="stat-pill-value">${{ india: "India 🇮🇳", us: "US 🇺🇸", crypto: "Crypto ₿" }[selectedMarket]}</div>
+          </div>
           <div class="stat-pill">
             <div class="stat-pill-label">Universe</div>
             <div class="stat-pill-value">${UNIVERSE_LABELS[scanData.stock_universe] || scanData.stock_universe || "—"}</div>
@@ -939,10 +1055,6 @@
           <div class="stat-pill">
             <div class="stat-pill-label">Scanned</div>
             <div class="stat-pill-value">${scanData.universe_size || "—"}</div>
-          </div>
-          <div class="stat-pill">
-            <div class="stat-pill-label">Data Points</div>
-            <div class="stat-pill-value">${scanData.yahoo_finance_success || scanData.real_data_count || "—"}</div>
           </div>
           <div class="stat-pill">
             <div class="stat-pill-label">Success Rate</div>
@@ -954,17 +1066,19 @@
           </div>
         `;
 
-        stockGrid.innerHTML = results.map(renderStockRow).join("");
+        document.getElementById("stockGrid").innerHTML = results.map(renderStockRow).join("");
         document.getElementById("resultsDiv").style.display = "block";
       }
 
       function renderStockRow(stock) {
-        const weekly = parseFloat(stock.weeklyChange);
+        const weekly  = parseFloat(stock.weeklyChange);
         const monthly = parseFloat(stock.monthlyChange);
-        const symbol = stock.symbol.replace(".NS", "");
-        const sector = SECTOR_LABELS[stock.sector] || stock.sector || "—";
-        const volume = typeof stock.volume === "number"
-          ? stock.volume.toLocaleString("en-IN")
+        const symbol  = stock.symbol.replace(".NS", "");
+        const sector  = SECTOR_LABELS[stock.sector] || stock.sector || "—";
+        const cur     = CURRENCY[selectedMarket];
+        const locale  = selectedMarket === "india" ? "en-IN" : "en-US";
+        const volume  = typeof stock.volume === "number"
+          ? stock.volume.toLocaleString(locale)
           : stock.volume || "—";
 
         return `
@@ -974,46 +1088,41 @@
               <div class="stock-name">${stock.name}</div>
             </td>
             <td><span class="sector-badge">${sector}</span></td>
-            <td class="align-right price-value">₹${stock.currentPrice}</td>
-            <td class="align-right ${weekly < 0 ? "change-negative" : "change-positive"}">${stock.weeklyChange}%</td>
+            <td class="align-right price-value">${cur}${stock.currentPrice}</td>
+            <td class="align-right ${weekly  < 0 ? "change-negative" : "change-positive"}">${stock.weeklyChange}%</td>
             <td class="align-right ${monthly < 0 ? "change-negative" : "change-positive"}">${stock.monthlyChange}%</td>
-            <td class="align-right price-secondary">₹${stock.priceOneWeekAgo}</td>
-            <td class="align-right price-secondary">₹${stock.priceOneMonthAgo}</td>
+            <td class="align-right price-secondary">${cur}${stock.priceOneWeekAgo}</td>
+            <td class="align-right price-secondary">${cur}${stock.priceOneMonthAgo}</td>
             <td class="align-right volume-value">${volume}</td>
           </tr>
         `;
       }
 
+      // ── Export ───────────────────────────────────────────────────────────────
+
       function exportResults() {
         if (!scanResults.length) return;
-
+        const cur = CURRENCY[selectedMarket];
         const headers = [
-          "Symbol", "Company Name", "Current Price (₹)",
+          "Symbol", "Name", `Current Price (${cur})`,
           "Weekly Change (%)", "Monthly Change (%)",
-          "Price 1 Week Ago (₹)", "Price 1 Month Ago (₹)",
-          "Volume", "Sector", "Market Cap", "Data Source",
+          `Price 1W Ago (${cur})`, `Price 1M Ago (${cur})`,
+          "Volume", "Sector", "Market Cap", "Source",
         ];
-
         const rows = scanResults.map(s => [
-          s.symbol,
-          `"${s.name}"`,
-          s.currentPrice,
-          s.weeklyChange,
-          s.monthlyChange,
-          s.priceOneWeekAgo,
-          s.priceOneMonthAgo,
+          s.symbol, `"${s.name}"`,
+          s.currentPrice, s.weeklyChange, s.monthlyChange,
+          s.priceOneWeekAgo, s.priceOneMonthAgo,
           typeof s.volume === "number" ? s.volume : `"${s.volume || "N/A"}"`,
-          s.sector || "unknown",
-          s.marketCap || "unknown",
-          s.source || "yahoo_finance",
+          s.sector || "—", s.marketCap || "—", s.source || "—",
         ].join(","));
 
-        const csv = [headers.join(","), ...rows].join("\n");
+        const csv  = [headers.join(","), ...rows].join("\n");
         const blob = new Blob([csv], { type: "text/csv" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `nse_dips_${new Date().toISOString().split("T")[0]}.csv`;
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement("a");
+        a.href     = url;
+        a.download = `dips_${selectedMarket}_${new Date().toISOString().split("T")[0]}.csv`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
