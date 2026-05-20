@@ -99,6 +99,12 @@ jspm_packages/
 .rts2_cache_es/
 .rts2_cache_umd/
 
+# Project directories
+port/
+port-2/
+port-3/
+old_code/
+
 # Optional REPL history
 .node_repl_history
 

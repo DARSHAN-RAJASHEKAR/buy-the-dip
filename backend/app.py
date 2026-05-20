@@ -1,7 +1,8 @@
 import os
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response, stream_with_context
 from flask_cors import CORS
 import requests
+import json
 from datetime import datetime, timedelta
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -24,7 +25,9 @@ if os.environ.get('RENDER') or os.environ.get('PORT'):
              "https://buythedip.darshanrajashekar.dev",
              "https://*.vercel.app",
              "http://localhost:3000",
-             "http://127.0.0.1:5000"
+             "http://127.0.0.1:5000",
+             "http://localhost:7778",
+             "http://127.0.0.1:7778"
          ],
          methods=["GET", "POST", "OPTIONS"],
          allow_headers=["Content-Type", "Authorization"]
@@ -37,7 +40,7 @@ else:
 
 # Comprehensive stock lists - manually curated and reliable
 def get_nifty_50_stocks():
-    """Nifty 50 stocks - most reliable large cap stocks"""
+    """Nifty 50 stocks"""
     return [
         {'symbol': 'ADANIENT.NS', 'name': 'Adani Enterprises', 'sector': 'metals', 'marketCap': 'large'},
         {'symbol': 'ADANIPORTS.NS', 'name': 'Adani Ports and Special Economic Zone', 'sector': 'infrastructure', 'marketCap': 'large'},
@@ -45,54 +48,54 @@ def get_nifty_50_stocks():
         {'symbol': 'ASIANPAINT.NS', 'name': 'Asian Paints', 'sector': 'consumer', 'marketCap': 'large'},
         {'symbol': 'AXISBANK.NS', 'name': 'Axis Bank', 'sector': 'banking', 'marketCap': 'large'},
         {'symbol': 'BAJAJ-AUTO.NS', 'name': 'Bajaj Auto', 'sector': 'auto', 'marketCap': 'large'},
-        {'symbol': 'BAJFINANCE.NS', 'name': 'Bajaj Finance', 'sector': 'banking', 'marketCap': 'large'},
         {'symbol': 'BAJAJFINSV.NS', 'name': 'Bajaj Finserv', 'sector': 'banking', 'marketCap': 'large'},
+        {'symbol': 'BAJFINANCE.NS', 'name': 'Bajaj Finance', 'sector': 'banking', 'marketCap': 'large'},
         {'symbol': 'BEL.NS', 'name': 'Bharat Electronics', 'sector': 'capital_goods', 'marketCap': 'large'},
         {'symbol': 'BHARTIARTL.NS', 'name': 'Bharti Airtel', 'sector': 'telecom', 'marketCap': 'large'},
         {'symbol': 'CIPLA.NS', 'name': 'Cipla', 'sector': 'healthcare', 'marketCap': 'large'},
         {'symbol': 'COALINDIA.NS', 'name': 'Coal India', 'sector': 'energy', 'marketCap': 'large'},
-        {'symbol': 'DRREDDY.NS', 'name': 'Dr. Reddy\'s Laboratories', 'sector': 'healthcare', 'marketCap': 'large'},
+        {'symbol': 'DRREDDY.NS', 'name': "Dr. Reddy's Laboratories", 'sector': 'healthcare', 'marketCap': 'large'},
         {'symbol': 'EICHERMOT.NS', 'name': 'Eicher Motors', 'sector': 'auto', 'marketCap': 'large'},
         {'symbol': 'ETERNAL.NS', 'name': 'Eternal', 'sector': 'consumer', 'marketCap': 'large'},
         {'symbol': 'GRASIM.NS', 'name': 'Grasim Industries', 'sector': 'cement', 'marketCap': 'large'},
         {'symbol': 'HCLTECH.NS', 'name': 'HCL Technologies', 'sector': 'it', 'marketCap': 'large'},
         {'symbol': 'HDFCBANK.NS', 'name': 'HDFC Bank', 'sector': 'banking', 'marketCap': 'large'},
         {'symbol': 'HDFCLIFE.NS', 'name': 'HDFC Life Insurance Company', 'sector': 'banking', 'marketCap': 'large'},
-        {'symbol': 'HEROMOTOCO.NS', 'name': 'Hero MotoCorp', 'sector': 'auto', 'marketCap': 'large'},
         {'symbol': 'HINDALCO.NS', 'name': 'Hindalco Industries', 'sector': 'metals', 'marketCap': 'large'},
         {'symbol': 'HINDUNILVR.NS', 'name': 'Hindustan Unilever', 'sector': 'fmcg', 'marketCap': 'large'},
         {'symbol': 'ICICIBANK.NS', 'name': 'ICICI Bank', 'sector': 'banking', 'marketCap': 'large'},
-        {'symbol': 'ITC.NS', 'name': 'ITC', 'sector': 'fmcg', 'marketCap': 'large'},
-        {'symbol': 'INDUSINDBK.NS', 'name': 'IndusInd Bank', 'sector': 'banking', 'marketCap': 'large'},
+        {'symbol': 'INDIGO.NS', 'name': 'InterGlobe Aviation', 'sector': 'infrastructure', 'marketCap': 'large'},
         {'symbol': 'INFY.NS', 'name': 'Infosys', 'sector': 'it', 'marketCap': 'large'},
-        {'symbol': 'JSWSTEEL.NS', 'name': 'JSW Steel', 'sector': 'metals', 'marketCap': 'large'},
+        {'symbol': 'ITC.NS', 'name': 'ITC', 'sector': 'fmcg', 'marketCap': 'large'},
         {'symbol': 'JIOFIN.NS', 'name': 'Jio Financial Services', 'sector': 'banking', 'marketCap': 'large'},
+        {'symbol': 'JSWSTEEL.NS', 'name': 'JSW Steel', 'sector': 'metals', 'marketCap': 'large'},
         {'symbol': 'KOTAKBANK.NS', 'name': 'Kotak Mahindra Bank', 'sector': 'banking', 'marketCap': 'large'},
         {'symbol': 'LT.NS', 'name': 'Larsen & Toubro', 'sector': 'construction', 'marketCap': 'large'},
         {'symbol': 'M&M.NS', 'name': 'Mahindra & Mahindra', 'sector': 'auto', 'marketCap': 'large'},
         {'symbol': 'MARUTI.NS', 'name': 'Maruti Suzuki India', 'sector': 'auto', 'marketCap': 'large'},
-        {'symbol': 'NTPC.NS', 'name': 'NTPC', 'sector': 'energy', 'marketCap': 'large'},
+        {'symbol': 'MAXHEALTH.NS', 'name': 'Max Healthcare Institute', 'sector': 'healthcare', 'marketCap': 'large'},
         {'symbol': 'NESTLEIND.NS', 'name': 'Nestle India', 'sector': 'fmcg', 'marketCap': 'large'},
+        {'symbol': 'NTPC.NS', 'name': 'NTPC', 'sector': 'energy', 'marketCap': 'large'},
         {'symbol': 'ONGC.NS', 'name': 'Oil & Natural Gas Corporation', 'sector': 'energy', 'marketCap': 'large'},
         {'symbol': 'POWERGRID.NS', 'name': 'Power Grid Corporation of India', 'sector': 'energy', 'marketCap': 'large'},
         {'symbol': 'RELIANCE.NS', 'name': 'Reliance Industries', 'sector': 'energy', 'marketCap': 'large'},
         {'symbol': 'SBILIFE.NS', 'name': 'SBI Life Insurance Company', 'sector': 'banking', 'marketCap': 'large'},
-        {'symbol': 'SHRIRAMFIN.NS', 'name': 'Shriram Finance', 'sector': 'banking', 'marketCap': 'large'},
         {'symbol': 'SBIN.NS', 'name': 'State Bank of India', 'sector': 'banking', 'marketCap': 'large'},
+        {'symbol': 'SHRIRAMFIN.NS', 'name': 'Shriram Finance', 'sector': 'banking', 'marketCap': 'large'},
         {'symbol': 'SUNPHARMA.NS', 'name': 'Sun Pharmaceutical Industries', 'sector': 'healthcare', 'marketCap': 'large'},
-        {'symbol': 'TCS.NS', 'name': 'Tata Consultancy Services', 'sector': 'it', 'marketCap': 'large'},
         {'symbol': 'TATACONSUM.NS', 'name': 'Tata Consumer Products', 'sector': 'fmcg', 'marketCap': 'large'},
-        {'symbol': 'TATAMOTORS.NS', 'name': 'Tata Motors', 'sector': 'auto', 'marketCap': 'large'},
         {'symbol': 'TATASTEEL.NS', 'name': 'Tata Steel', 'sector': 'metals', 'marketCap': 'large'},
+        {'symbol': 'TCS.NS', 'name': 'Tata Consultancy Services', 'sector': 'it', 'marketCap': 'large'},
         {'symbol': 'TECHM.NS', 'name': 'Tech Mahindra', 'sector': 'it', 'marketCap': 'large'},
         {'symbol': 'TITAN.NS', 'name': 'Titan Company', 'sector': 'consumer', 'marketCap': 'large'},
+        {'symbol': 'TMPV.NS', 'name': 'Tata Motors Passenger Vehicles', 'sector': 'auto', 'marketCap': 'large'},
         {'symbol': 'TRENT.NS', 'name': 'Trent', 'sector': 'consumer', 'marketCap': 'large'},
         {'symbol': 'ULTRACEMCO.NS', 'name': 'UltraTech Cement', 'sector': 'cement', 'marketCap': 'large'},
-        {'symbol': 'WIPRO.NS', 'name': 'Wipro', 'sector': 'it', 'marketCap': 'large'}
+        {'symbol': 'WIPRO.NS', 'name': 'Wipro', 'sector': 'it', 'marketCap': 'large'},
     ]
 
 def get_nifty_100_stocks():
-    """Nifty 100 stocks - includes Nifty 50 + Next 50"""
+    """Nifty 100 stocks"""
     return [
         {'symbol': 'ABB.NS', 'name': 'ABB India', 'sector': 'capital_goods', 'marketCap': 'large'},
         {'symbol': 'ADANIENSOL.NS', 'name': 'Adani Energy Solutions', 'sector': 'energy', 'marketCap': 'large'},
@@ -103,97 +106,97 @@ def get_nifty_100_stocks():
         {'symbol': 'AMBUJACEM.NS', 'name': 'Ambuja Cements', 'sector': 'cement', 'marketCap': 'large'},
         {'symbol': 'APOLLOHOSP.NS', 'name': 'Apollo Hospitals Enterprise', 'sector': 'healthcare', 'marketCap': 'large'},
         {'symbol': 'ASIANPAINT.NS', 'name': 'Asian Paints', 'sector': 'consumer', 'marketCap': 'large'},
-        {'symbol': 'DMART.NS', 'name': 'Avenue Supermarts', 'sector': 'consumer', 'marketCap': 'large'},
         {'symbol': 'AXISBANK.NS', 'name': 'Axis Bank', 'sector': 'banking', 'marketCap': 'large'},
         {'symbol': 'BAJAJ-AUTO.NS', 'name': 'Bajaj Auto', 'sector': 'auto', 'marketCap': 'large'},
-        {'symbol': 'BAJFINANCE.NS', 'name': 'Bajaj Finance', 'sector': 'banking', 'marketCap': 'large'},
         {'symbol': 'BAJAJFINSV.NS', 'name': 'Bajaj Finserv', 'sector': 'banking', 'marketCap': 'large'},
         {'symbol': 'BAJAJHLDNG.NS', 'name': 'Bajaj Holdings & Investment', 'sector': 'banking', 'marketCap': 'large'},
-        {'symbol': 'BAJAJHFL.NS', 'name': 'Bajaj Housing Finance', 'sector': 'banking', 'marketCap': 'large'},
+        {'symbol': 'BAJFINANCE.NS', 'name': 'Bajaj Finance', 'sector': 'banking', 'marketCap': 'large'},
         {'symbol': 'BANKBARODA.NS', 'name': 'Bank of Baroda', 'sector': 'banking', 'marketCap': 'large'},
         {'symbol': 'BEL.NS', 'name': 'Bharat Electronics', 'sector': 'capital_goods', 'marketCap': 'large'},
-        {'symbol': 'BPCL.NS', 'name': 'Bharat Petroleum Corporation', 'sector': 'energy', 'marketCap': 'large'},
         {'symbol': 'BHARTIARTL.NS', 'name': 'Bharti Airtel', 'sector': 'telecom', 'marketCap': 'large'},
         {'symbol': 'BOSCHLTD.NS', 'name': 'Bosch', 'sector': 'auto', 'marketCap': 'large'},
+        {'symbol': 'BPCL.NS', 'name': 'Bharat Petroleum Corporation', 'sector': 'energy', 'marketCap': 'large'},
         {'symbol': 'BRITANNIA.NS', 'name': 'Britannia Industries', 'sector': 'fmcg', 'marketCap': 'large'},
-        {'symbol': 'CGPOWER.NS', 'name': 'CG Power and Industrial Solutions', 'sector': 'capital_goods', 'marketCap': 'large'},
         {'symbol': 'CANBK.NS', 'name': 'Canara Bank', 'sector': 'banking', 'marketCap': 'large'},
+        {'symbol': 'CGPOWER.NS', 'name': 'CG Power and Industrial Solutions', 'sector': 'capital_goods', 'marketCap': 'large'},
         {'symbol': 'CHOLAFIN.NS', 'name': 'Cholamandalam Investment and Finance Company', 'sector': 'banking', 'marketCap': 'large'},
         {'symbol': 'CIPLA.NS', 'name': 'Cipla', 'sector': 'healthcare', 'marketCap': 'large'},
         {'symbol': 'COALINDIA.NS', 'name': 'Coal India', 'sector': 'energy', 'marketCap': 'large'},
+        {'symbol': 'CUMMINSIND.NS', 'name': 'Cummins India', 'sector': 'capital_goods', 'marketCap': 'large'},
+        {'symbol': 'DIVISLAB.NS', 'name': "Divi's Laboratories", 'sector': 'healthcare', 'marketCap': 'large'},
         {'symbol': 'DLF.NS', 'name': 'DLF', 'sector': 'realty', 'marketCap': 'large'},
-        {'symbol': 'DABUR.NS', 'name': 'Dabur India', 'sector': 'fmcg', 'marketCap': 'large'},
-        {'symbol': 'DIVISLAB.NS', 'name': 'Divi\'s Laboratories', 'sector': 'healthcare', 'marketCap': 'large'},
-        {'symbol': 'DRREDDY.NS', 'name': 'Dr. Reddy\'s Laboratories', 'sector': 'healthcare', 'marketCap': 'large'},
+        {'symbol': 'DMART.NS', 'name': 'Avenue Supermarts', 'sector': 'consumer', 'marketCap': 'large'},
+        {'symbol': 'DRREDDY.NS', 'name': "Dr. Reddy's Laboratories", 'sector': 'healthcare', 'marketCap': 'large'},
         {'symbol': 'EICHERMOT.NS', 'name': 'Eicher Motors', 'sector': 'auto', 'marketCap': 'large'},
+        {'symbol': 'ENRIN.NS', 'name': 'Siemens Energy India', 'sector': 'energy', 'marketCap': 'large'},
         {'symbol': 'ETERNAL.NS', 'name': 'Eternal', 'sector': 'consumer', 'marketCap': 'large'},
         {'symbol': 'GAIL.NS', 'name': 'GAIL (India)', 'sector': 'energy', 'marketCap': 'large'},
         {'symbol': 'GODREJCP.NS', 'name': 'Godrej Consumer Products', 'sector': 'fmcg', 'marketCap': 'large'},
         {'symbol': 'GRASIM.NS', 'name': 'Grasim Industries', 'sector': 'cement', 'marketCap': 'large'},
+        {'symbol': 'HAL.NS', 'name': 'Hindustan Aeronautics', 'sector': 'capital_goods', 'marketCap': 'large'},
         {'symbol': 'HCLTECH.NS', 'name': 'HCL Technologies', 'sector': 'it', 'marketCap': 'large'},
+        {'symbol': 'HDFCAMC.NS', 'name': 'HDFC Asset Management Company', 'sector': 'banking', 'marketCap': 'large'},
         {'symbol': 'HDFCBANK.NS', 'name': 'HDFC Bank', 'sector': 'banking', 'marketCap': 'large'},
         {'symbol': 'HDFCLIFE.NS', 'name': 'HDFC Life Insurance Company', 'sector': 'banking', 'marketCap': 'large'},
-        {'symbol': 'HAVELLS.NS', 'name': 'Havells India', 'sector': 'consumer', 'marketCap': 'large'},
-        {'symbol': 'HEROMOTOCO.NS', 'name': 'Hero MotoCorp', 'sector': 'auto', 'marketCap': 'large'},
         {'symbol': 'HINDALCO.NS', 'name': 'Hindalco Industries', 'sector': 'metals', 'marketCap': 'large'},
-        {'symbol': 'HAL.NS', 'name': 'Hindustan Aeronautics', 'sector': 'capital_goods', 'marketCap': 'large'},
         {'symbol': 'HINDUNILVR.NS', 'name': 'Hindustan Unilever', 'sector': 'fmcg', 'marketCap': 'large'},
+        {'symbol': 'HINDZINC.NS', 'name': 'Hindustan Zinc', 'sector': 'metals', 'marketCap': 'large'},
         {'symbol': 'HYUNDAI.NS', 'name': 'Hyundai Motor India', 'sector': 'auto', 'marketCap': 'large'},
         {'symbol': 'ICICIBANK.NS', 'name': 'ICICI Bank', 'sector': 'banking', 'marketCap': 'large'},
-        {'symbol': 'ICICIGI.NS', 'name': 'ICICI Lombard General Insurance Company', 'sector': 'banking', 'marketCap': 'large'},
-        {'symbol': 'ICICIPRULI.NS', 'name': 'ICICI Prudential Life Insurance Company', 'sector': 'banking', 'marketCap': 'large'},
-        {'symbol': 'ITC.NS', 'name': 'ITC', 'sector': 'fmcg', 'marketCap': 'large'},
         {'symbol': 'INDHOTEL.NS', 'name': 'Indian Hotels Co.', 'sector': 'consumer', 'marketCap': 'large'},
-        {'symbol': 'IOC.NS', 'name': 'Indian Oil Corporation', 'sector': 'energy', 'marketCap': 'mid'},
-        {'symbol': 'IRFC.NS', 'name': 'Indian Railway Finance Corporation', 'sector': 'banking', 'marketCap': 'mid'},
-        {'symbol': 'INDUSINDBK.NS', 'name': 'IndusInd Bank', 'sector': 'banking', 'marketCap': 'mid'},
-        {'symbol': 'NAUKRI.NS', 'name': 'Info Edge (India)', 'sector': 'consumer', 'marketCap': 'mid'},
-        {'symbol': 'INFY.NS', 'name': 'Infosys', 'sector': 'it', 'marketCap': 'mid'},
-        {'symbol': 'INDIGO.NS', 'name': 'InterGlobe Aviation', 'sector': 'infrastructure', 'marketCap': 'mid'},
-        {'symbol': 'JSWENERGY.NS', 'name': 'JSW Energy', 'sector': 'energy', 'marketCap': 'mid'},
-        {'symbol': 'JSWSTEEL.NS', 'name': 'JSW Steel', 'sector': 'metals', 'marketCap': 'mid'},
-        {'symbol': 'JINDALSTEL.NS', 'name': 'Jindal Steel & Power', 'sector': 'metals', 'marketCap': 'mid'},
-        {'symbol': 'JIOFIN.NS', 'name': 'Jio Financial Services', 'sector': 'banking', 'marketCap': 'mid'},
-        {'symbol': 'KOTAKBANK.NS', 'name': 'Kotak Mahindra Bank', 'sector': 'banking', 'marketCap': 'mid'},
-        {'symbol': 'LTIM.NS', 'name': 'LTIMindtree', 'sector': 'it', 'marketCap': 'mid'},
-        {'symbol': 'LT.NS', 'name': 'Larsen & Toubro', 'sector': 'construction', 'marketCap': 'mid'},
-        {'symbol': 'LICI.NS', 'name': 'Life Insurance Corporation of India', 'sector': 'banking', 'marketCap': 'mid'},
-        {'symbol': 'LODHA.NS', 'name': 'Lodha Developers', 'sector': 'realty', 'marketCap': 'mid'},
-        {'symbol': 'M&M.NS', 'name': 'Mahindra & Mahindra', 'sector': 'auto', 'marketCap': 'mid'},
-        {'symbol': 'MARUTI.NS', 'name': 'Maruti Suzuki India', 'sector': 'auto', 'marketCap': 'mid'},
-        {'symbol': 'NTPC.NS', 'name': 'NTPC', 'sector': 'energy', 'marketCap': 'mid'},
-        {'symbol': 'NESTLEIND.NS', 'name': 'Nestle India', 'sector': 'fmcg', 'marketCap': 'mid'},
-        {'symbol': 'ONGC.NS', 'name': 'Oil & Natural Gas Corporation', 'sector': 'energy', 'marketCap': 'mid'},
-        {'symbol': 'PIDILITIND.NS', 'name': 'Pidilite Industries', 'sector': 'chemicals', 'marketCap': 'mid'},
-        {'symbol': 'PFC.NS', 'name': 'Power Finance Corporation', 'sector': 'banking', 'marketCap': 'mid'},
-        {'symbol': 'POWERGRID.NS', 'name': 'Power Grid Corporation of India', 'sector': 'energy', 'marketCap': 'mid'},
-        {'symbol': 'PNB.NS', 'name': 'Punjab National Bank', 'sector': 'banking', 'marketCap': 'mid'},
-        {'symbol': 'RECLTD.NS', 'name': 'REC', 'sector': 'banking', 'marketCap': 'mid'},
-        {'symbol': 'RELIANCE.NS', 'name': 'Reliance Industries', 'sector': 'energy', 'marketCap': 'mid'},
-        {'symbol': 'SBILIFE.NS', 'name': 'SBI Life Insurance Company', 'sector': 'banking', 'marketCap': 'mid'},
-        {'symbol': 'MOTHERSON.NS', 'name': 'Samvardhana Motherson International', 'sector': 'auto', 'marketCap': 'mid'},
-        {'symbol': 'SHREECEM.NS', 'name': 'Shree Cement', 'sector': 'cement', 'marketCap': 'mid'},
-        {'symbol': 'SHRIRAMFIN.NS', 'name': 'Shriram Finance', 'sector': 'banking', 'marketCap': 'mid'},
-        {'symbol': 'SIEMENS.NS', 'name': 'Siemens', 'sector': 'capital_goods', 'marketCap': 'mid'},
-        {'symbol': 'SBIN.NS', 'name': 'State Bank of India', 'sector': 'banking', 'marketCap': 'mid'},
-        {'symbol': 'SUNPHARMA.NS', 'name': 'Sun Pharmaceutical Industries', 'sector': 'healthcare', 'marketCap': 'mid'},
-        {'symbol': 'SWIGGY.NS', 'name': 'Swiggy', 'sector': 'consumer', 'marketCap': 'mid'},
-        {'symbol': 'TVSMOTOR.NS', 'name': 'TVS Motor Company', 'sector': 'auto', 'marketCap': 'mid'},
-        {'symbol': 'TCS.NS', 'name': 'Tata Consultancy Services', 'sector': 'it', 'marketCap': 'mid'},
-        {'symbol': 'TATACONSUM.NS', 'name': 'Tata Consumer Products', 'sector': 'fmcg', 'marketCap': 'mid'},
-        {'symbol': 'TATAMOTORS.NS', 'name': 'Tata Motors', 'sector': 'auto', 'marketCap': 'mid'},
-        {'symbol': 'TATAPOWER.NS', 'name': 'Tata Power Co.', 'sector': 'energy', 'marketCap': 'mid'},
-        {'symbol': 'TATASTEEL.NS', 'name': 'Tata Steel', 'sector': 'metals', 'marketCap': 'mid'},
-        {'symbol': 'TECHM.NS', 'name': 'Tech Mahindra', 'sector': 'it', 'marketCap': 'mid'},
-        {'symbol': 'TITAN.NS', 'name': 'Titan Company', 'sector': 'consumer', 'marketCap': 'mid'},
-        {'symbol': 'TORNTPHARM.NS', 'name': 'Torrent Pharmaceuticals', 'sector': 'healthcare', 'marketCap': 'mid'},
-        {'symbol': 'TRENT.NS', 'name': 'Trent', 'sector': 'consumer', 'marketCap': 'mid'},
-        {'symbol': 'ULTRACEMCO.NS', 'name': 'UltraTech Cement', 'sector': 'cement', 'marketCap': 'mid'},
-        {'symbol': 'UNITDSPR.NS', 'name': 'United Spirits', 'sector': 'fmcg', 'marketCap': 'mid'},
-        {'symbol': 'VBL.NS', 'name': 'Varun Beverages', 'sector': 'fmcg', 'marketCap': 'mid'},
-        {'symbol': 'VEDL.NS', 'name': 'Vedanta', 'sector': 'metals', 'marketCap': 'mid'},
-        {'symbol': 'WIPRO.NS', 'name': 'Wipro', 'sector': 'it', 'marketCap': 'mid'},
-        {'symbol': 'ZYDUSLIFE.NS', 'name': 'Zydus Lifesciences', 'sector': 'healthcare', 'marketCap': 'mid'}
+        {'symbol': 'INDIGO.NS', 'name': 'InterGlobe Aviation', 'sector': 'infrastructure', 'marketCap': 'large'},
+        {'symbol': 'INFY.NS', 'name': 'Infosys', 'sector': 'it', 'marketCap': 'large'},
+        {'symbol': 'IOC.NS', 'name': 'Indian Oil Corporation', 'sector': 'energy', 'marketCap': 'large'},
+        {'symbol': 'IRFC.NS', 'name': 'Indian Railway Finance Corporation', 'sector': 'banking', 'marketCap': 'large'},
+        {'symbol': 'ITC.NS', 'name': 'ITC', 'sector': 'fmcg', 'marketCap': 'large'},
+        {'symbol': 'JINDALSTEL.NS', 'name': 'Jindal Steel & Power', 'sector': 'metals', 'marketCap': 'large'},
+        {'symbol': 'JIOFIN.NS', 'name': 'Jio Financial Services', 'sector': 'banking', 'marketCap': 'large'},
+        {'symbol': 'JSWSTEEL.NS', 'name': 'JSW Steel', 'sector': 'metals', 'marketCap': 'large'},
+        {'symbol': 'KOTAKBANK.NS', 'name': 'Kotak Mahindra Bank', 'sector': 'banking', 'marketCap': 'large'},
+        {'symbol': 'LODHA.NS', 'name': 'Lodha Developers', 'sector': 'realty', 'marketCap': 'large'},
+        {'symbol': 'LT.NS', 'name': 'Larsen & Toubro', 'sector': 'construction', 'marketCap': 'large'},
+        {'symbol': 'LTM.NS', 'name': 'LTM (formerly LTIMindtree)', 'sector': 'it', 'marketCap': 'large'},
+        {'symbol': 'M&M.NS', 'name': 'Mahindra & Mahindra', 'sector': 'auto', 'marketCap': 'large'},
+        {'symbol': 'MARUTI.NS', 'name': 'Maruti Suzuki India', 'sector': 'auto', 'marketCap': 'large'},
+        {'symbol': 'MAXHEALTH.NS', 'name': 'Max Healthcare Institute', 'sector': 'healthcare', 'marketCap': 'large'},
+        {'symbol': 'MAZDOCK.NS', 'name': 'Mazagon Dock Shipbuilders', 'sector': 'capital_goods', 'marketCap': 'large'},
+        {'symbol': 'MOTHERSON.NS', 'name': 'Samvardhana Motherson International', 'sector': 'auto', 'marketCap': 'large'},
+        {'symbol': 'MUTHOOTFIN.NS', 'name': 'Muthoot Finance', 'sector': 'banking', 'marketCap': 'large'},
+        {'symbol': 'NESTLEIND.NS', 'name': 'Nestle India', 'sector': 'fmcg', 'marketCap': 'large'},
+        {'symbol': 'NTPC.NS', 'name': 'NTPC', 'sector': 'energy', 'marketCap': 'large'},
+        {'symbol': 'ONGC.NS', 'name': 'Oil & Natural Gas Corporation', 'sector': 'energy', 'marketCap': 'large'},
+        {'symbol': 'PFC.NS', 'name': 'Power Finance Corporation', 'sector': 'banking', 'marketCap': 'large'},
+        {'symbol': 'PIDILITIND.NS', 'name': 'Pidilite Industries', 'sector': 'chemicals', 'marketCap': 'large'},
+        {'symbol': 'PNB.NS', 'name': 'Punjab National Bank', 'sector': 'banking', 'marketCap': 'large'},
+        {'symbol': 'POWERGRID.NS', 'name': 'Power Grid Corporation of India', 'sector': 'energy', 'marketCap': 'large'},
+        {'symbol': 'RECLTD.NS', 'name': 'REC', 'sector': 'banking', 'marketCap': 'large'},
+        {'symbol': 'RELIANCE.NS', 'name': 'Reliance Industries', 'sector': 'energy', 'marketCap': 'large'},
+        {'symbol': 'SBILIFE.NS', 'name': 'SBI Life Insurance Company', 'sector': 'banking', 'marketCap': 'large'},
+        {'symbol': 'SBIN.NS', 'name': 'State Bank of India', 'sector': 'banking', 'marketCap': 'large'},
+        {'symbol': 'SHREECEM.NS', 'name': 'Shree Cement', 'sector': 'cement', 'marketCap': 'large'},
+        {'symbol': 'SHRIRAMFIN.NS', 'name': 'Shriram Finance', 'sector': 'banking', 'marketCap': 'large'},
+        {'symbol': 'SIEMENS.NS', 'name': 'Siemens', 'sector': 'capital_goods', 'marketCap': 'large'},
+        {'symbol': 'SOLARINDS.NS', 'name': 'Solar Industries India', 'sector': 'chemicals', 'marketCap': 'large'},
+        {'symbol': 'SUNPHARMA.NS', 'name': 'Sun Pharmaceutical Industries', 'sector': 'healthcare', 'marketCap': 'large'},
+        {'symbol': 'TATACAP.NS', 'name': 'Tata Capital', 'sector': 'banking', 'marketCap': 'large'},
+        {'symbol': 'TATACONSUM.NS', 'name': 'Tata Consumer Products', 'sector': 'fmcg', 'marketCap': 'large'},
+        {'symbol': 'TATAPOWER.NS', 'name': 'Tata Power Co.', 'sector': 'energy', 'marketCap': 'large'},
+        {'symbol': 'TATASTEEL.NS', 'name': 'Tata Steel', 'sector': 'metals', 'marketCap': 'large'},
+        {'symbol': 'TCS.NS', 'name': 'Tata Consultancy Services', 'sector': 'it', 'marketCap': 'large'},
+        {'symbol': 'TECHM.NS', 'name': 'Tech Mahindra', 'sector': 'it', 'marketCap': 'large'},
+        {'symbol': 'TITAN.NS', 'name': 'Titan Company', 'sector': 'consumer', 'marketCap': 'large'},
+        {'symbol': 'TMCV.NS', 'name': 'Tata Motors (Commercial Vehicles)', 'sector': 'auto', 'marketCap': 'large'},
+        {'symbol': 'TMPV.NS', 'name': 'Tata Motors Passenger Vehicles', 'sector': 'auto', 'marketCap': 'large'},
+        {'symbol': 'TORNTPHARM.NS', 'name': 'Torrent Pharmaceuticals', 'sector': 'healthcare', 'marketCap': 'large'},
+        {'symbol': 'TRENT.NS', 'name': 'Trent', 'sector': 'consumer', 'marketCap': 'large'},
+        {'symbol': 'TVSMOTOR.NS', 'name': 'TVS Motor Company', 'sector': 'auto', 'marketCap': 'large'},
+        {'symbol': 'ULTRACEMCO.NS', 'name': 'UltraTech Cement', 'sector': 'cement', 'marketCap': 'large'},
+        {'symbol': 'UNIONBANK.NS', 'name': 'Union Bank of India', 'sector': 'banking', 'marketCap': 'large'},
+        {'symbol': 'UNITDSPR.NS', 'name': 'United Spirits', 'sector': 'fmcg', 'marketCap': 'large'},
+        {'symbol': 'VBL.NS', 'name': 'Varun Beverages', 'sector': 'fmcg', 'marketCap': 'large'},
+        {'symbol': 'VEDL.NS', 'name': 'Vedanta', 'sector': 'metals', 'marketCap': 'large'},
+        {'symbol': 'WIPRO.NS', 'name': 'Wipro', 'sector': 'it', 'marketCap': 'large'},
+        {'symbol': 'ZYDUSLIFE.NS', 'name': 'Zydus Lifesciences', 'sector': 'healthcare', 'marketCap': 'large'},
     ]
 
 def get_nifty_200_stocks():
@@ -441,7 +444,6 @@ def get_nifty_500_stocks():
         {'symbol': 'AMBUJACEM.NS', 'name': 'Ambuja Cements', 'sector': 'cement', 'marketCap': 'large'},
         {'symbol': 'ANANTRAJ.NS', 'name': 'Anant Raj', 'sector': 'realty', 'marketCap': 'large'},
         {'symbol': 'ANGELONE.NS', 'name': 'Angel One', 'sector': 'banking', 'marketCap': 'large'},
-        {'symbol': 'ANILAINFRA.NS', 'name': 'Anil Starch Products', 'sector': 'chemicals', 'marketCap': 'large'},
         {'symbol': 'APARINDS.NS', 'name': 'Apar Industries', 'sector': 'capital_goods', 'marketCap': 'large'},
         {'symbol': 'APOLLOHOSP.NS', 'name': 'Apollo Hospitals Enterprise', 'sector': 'healthcare', 'marketCap': 'large'},
         {'symbol': 'APOLLOTYRE.NS', 'name': 'Apollo Tyres', 'sector': 'auto', 'marketCap': 'large'},
@@ -592,7 +594,6 @@ def get_nifty_500_stocks():
         {'symbol': 'HINDPETRO.NS', 'name': 'Hindustan Petroleum Corporation', 'sector': 'energy', 'marketCap': 'small'},
         {'symbol': 'HINDUNILVR.NS', 'name': 'Hindustan Unilever', 'sector': 'fmcg', 'marketCap': 'small'},
         {'symbol': 'HINDZINC.NS', 'name': 'Hindustan Zinc', 'sector': 'metals', 'marketCap': 'small'},
-        {'symbol': 'HINDUSTANBIOSCI.NS', 'name': 'Hindustan BioSciences', 'sector': 'healthcare', 'marketCap': 'small'},
         {'symbol': 'HIMATSEIDE.NS', 'name': 'Himatsingka Seide', 'sector': 'textiles', 'marketCap': 'small'},
         {'symbol': 'HPL.NS', 'name': 'HPL Electric & Power', 'sector': 'capital_goods', 'marketCap': 'small'},
         {'symbol': 'AGI.NS', 'name': 'HSIL', 'sector': 'consumer', 'marketCap': 'small'},
@@ -651,7 +652,6 @@ def get_nifty_500_stocks():
         {'symbol': 'KAJARIACER.NS', 'name': 'Kajaria Ceramics', 'sector': 'consumer', 'marketCap': 'micro'},
         {'symbol': 'KPIL.NS', 'name': 'Kalpataru Power Transmission', 'sector': 'capital_goods', 'marketCap': 'micro'},
         {'symbol': 'KANSAINER.NS', 'name': 'Kansai Nerolac Paints', 'sector': 'chemicals', 'marketCap': 'micro'},
-        {'symbol': 'KAPURPESTH.NS', 'name': 'Kapur Pesticides', 'sector': 'chemicals', 'marketCap': 'micro'},
         {'symbol': 'KARURVYSYA.NS', 'name': 'Karur Vysya Bank', 'sector': 'banking', 'marketCap': 'micro'},
         {'symbol': 'KECL.NS', 'name': 'Kirloskar Electric Company', 'sector': 'capital_goods', 'marketCap': 'micro'},
         {'symbol': 'KEI.NS', 'name': 'KEI Industries', 'sector': 'capital_goods', 'marketCap': 'micro'},
@@ -783,7 +783,6 @@ def get_nifty_500_stocks():
         {'symbol': 'SBICARD.NS', 'name': 'SBI Cards and Payment Services', 'sector': 'banking', 'marketCap': 'micro'},
         {'symbol': 'SBILIFE.NS', 'name': 'SBI Life Insurance Company', 'sector': 'banking', 'marketCap': 'micro'},
         {'symbol': 'SCHAEFFLER.NS', 'name': 'Schaeffler India', 'sector': 'auto', 'marketCap': 'micro'},
-        {'symbol': 'SEQUENT.NS', 'name': 'Sequent Scientific', 'sector': 'healthcare', 'marketCap': 'micro'},
         {'symbol': 'SFL.NS', 'name': 'Sheela Foam', 'sector': 'consumer', 'marketCap': 'micro'},
         {'symbol': 'SHOPERSTOP.NS', 'name': 'Shoppers Stop', 'sector': 'consumer', 'marketCap': 'micro'},
         {'symbol': 'SHREECEM.NS', 'name': 'Shree Cement', 'sector': 'cement', 'marketCap': 'micro'},
@@ -848,9 +847,8 @@ def get_nifty_500_stocks():
         {'symbol': 'VMART.NS', 'name': 'V-Mart Retail', 'sector': 'consumer', 'marketCap': 'micro'},
         {'symbol': 'VOLTAS.NS', 'name': 'Voltas', 'sector': 'consumer', 'marketCap': 'micro'},
         {'symbol': 'VTL.NS', 'name': 'Vardhman Textiles', 'sector': 'textiles', 'marketCap': 'micro'},
-        {'symbol': 'WABCOINDIA.NS', 'name': 'Wabco India', 'sector': 'auto', 'marketCap': 'micro'},
         {'symbol': 'WELCORP.NS', 'name': 'Welspun Corp', 'sector': 'metals', 'marketCap': 'micro'},
-        {'symbol': '	WELSPUNLIV.NS', 'name': 'Welspun India', 'sector': 'textiles', 'marketCap': 'micro'},
+        {'symbol': 'WELSPUNLIV.NS', 'name': 'Welspun India', 'sector': 'textiles', 'marketCap': 'micro'},
         {'symbol': 'WESTLIFE.NS', 'name': 'Westlife Foodworld', 'sector': 'consumer', 'marketCap': 'micro'},
         {'symbol': 'WHIRLPOOL.NS', 'name': 'Whirlpool of India', 'sector': 'consumer', 'marketCap': 'micro'},
         {'symbol': 'WIPRO.NS', 'name': 'Wipro', 'sector': 'it', 'marketCap': 'micro'},
@@ -1469,6 +1467,144 @@ def get_universe(universe_type):
             'message': 'Failed to get stock universe'
         }), 500
 
+@app.route('/scan-stream')
+def scan_stream():
+    """Streaming version of /scan using Server-Sent Events (SSE).
+
+    Accepts the same parameters as /scan but via query string (GET),
+    because EventSource only supports GET.
+
+    Emits these events as data becomes available:
+      init     { total, universe_size, universe, market }
+      progress { processed, total, matches }
+      match    { ...stock result dict... }
+      done     { total_matches, universe_size, processed, success_rate, market }
+      error    { message }
+    """
+    try:
+        weekly_threshold  = float(request.args.get('weeklyThreshold', 5))
+        monthly_threshold = float(request.args.get('monthlyThreshold', 10))
+        market_cap_filter = request.args.get('marketCapFilter', 'all')
+        sector_filter     = request.args.get('sectorFilter', 'all')
+        stock_universe    = request.args.get('stockUniverse', 'nifty100')
+        market            = request.args.get('market', 'india')
+    except Exception as e:
+        return jsonify({'error': f'Invalid params: {e}'}), 400
+
+    def sse(event, data):
+        return f"event: {event}\ndata: {json.dumps(data)}\n\n"
+
+    def generate():
+        try:
+            # ── Crypto: monolithic Binance call ──
+            # (scan_crypto_via_binance does it all in one shot; we can't
+            # stream per-symbol progress for crypto without refactoring it.
+            # We emit init → all matches → done.)
+            if market == 'crypto':
+                size_map = {'top50': 50, 'top100': 100, 'top200': 200, 'top500': 500}
+                universe_size = size_map.get(stock_universe, 100)
+                yield sse('init', {
+                    'total': universe_size, 'universe_size': universe_size,
+                    'universe': stock_universe, 'market': 'crypto',
+                })
+                results = scan_crypto_via_binance(
+                    universe_size, weekly_threshold, monthly_threshold, market_cap_filter
+                )
+                for r in results:
+                    yield sse('match', r)
+                yield sse('progress', {
+                    'processed': universe_size, 'total': universe_size, 'matches': len(results)
+                })
+                yield sse('done', {
+                    'total_matches': len(results),
+                    'stock_universe': stock_universe,
+                    'universe_size': universe_size,
+                    'processed': universe_size,
+                    'success_rate': '100%',
+                    'market': 'crypto',
+                })
+                return
+
+            # ── India / US: per-symbol streaming ──
+            stock_list = get_stock_universe(stock_universe, market)
+            filtered_stocks = [
+                s for s in stock_list
+                if (market_cap_filter == 'all' or s.get('marketCap') == market_cap_filter)
+                and (sector_filter == 'all' or s.get('sector') == sector_filter)
+            ]
+
+            yield sse('init', {
+                'total': len(filtered_stocks),
+                'universe_size': len(stock_list),
+                'universe': stock_universe,
+                'market': market,
+            })
+
+            processed = 0
+            matches = []
+            real_data_count = 0
+            failed_count = 0
+            failed_stocks = []
+
+            with ThreadPoolExecutor(max_workers=5) as executor:
+                future_to_stock = {
+                    executor.submit(process_single_stock, stock, weekly_threshold, monthly_threshold): stock
+                    for stock in filtered_stocks
+                }
+                for future in as_completed(future_to_stock):
+                    stock = future_to_stock[future]
+                    processed += 1
+                    try:
+                        result = future.result()
+                        if result['status'] == 'match':
+                            matches.append(result['data'])
+                            real_data_count += 1
+                            yield sse('match', result['data'])
+                        elif result['status'] == 'no_match':
+                            real_data_count += 1
+                        else:
+                            failed_count += 1
+                            failed_stocks.append(stock['symbol'])
+                    except Exception as e:
+                        failed_count += 1
+                        failed_stocks.append(stock['symbol'])
+
+                    yield sse('progress', {
+                        'processed': processed,
+                        'total': len(filtered_stocks),
+                        'matches': len(matches),
+                    })
+
+            if failed_stocks:
+                print(f"\n[SCAN FAILURES] {failed_count} symbol(s) failed to fetch:")
+                for sym in failed_stocks:
+                    print(f"  ✗ {sym}")
+            else:
+                print(f"[SCAN] All {processed} symbols fetched successfully.")
+
+            yield sse('done', {
+                'total_matches': len(matches),
+                'stock_universe': stock_universe,
+                'universe_size': len(stock_list),
+                'processed': processed,
+                'success_rate': f"{((real_data_count / processed) * 100):.1f}%" if processed > 0 else "0%",
+                'market': market,
+                'failed_symbols': failed_stocks,
+            })
+        except Exception as e:
+            print(f"[SCAN-STREAM ERROR] {e}")
+            yield sse('error', {'message': str(e)})
+
+    return Response(
+        stream_with_context(generate()),
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache, no-transform',
+            'X-Accel-Buffering': 'no',          # disables nginx / proxy buffering
+            'Connection': 'keep-alive',
+        },
+    )
+
 @app.route('/scan', methods=['POST'])
 def scan_stocks():
     """Scan stocks with Yahoo Finance data only"""
@@ -1610,6 +1746,51 @@ def scan_stocks():
     except Exception as e:
         print(f"[SCAN ERROR] {str(e)}")
         return jsonify({'error': str(e)}), 500
+
+@app.route('/tickers')
+def tickers():
+    """Return current values for headline indices used by the UI status bar.
+
+    Response shape:
+      {
+        "nifty": {"value": 22418.30, "change_pct": -1.42},
+        "dow":   {"value": 41912.20, "change_pct": -0.31},
+        "btc":   {"value": 96420.00, "change_pct":  1.42}
+      }
+
+    Any individual ticker that fails returns null for that key so the
+    frontend can degrade gracefully.
+    """
+    symbols = [
+        ('nifty', '^NSEI'),
+        ('dow',   '^DJI'),
+        ('btc',   'BTC-USD'),
+    ]
+    out = {}
+    for key, symbol in symbols:
+        try:
+            url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
+            r = requests.get(
+                url,
+                params={'interval': '1d', 'range': '5d'},
+                headers={'User-Agent': 'Mozilla/5.0'},
+                timeout=5,
+            )
+            r.raise_for_status()
+            data = r.json()
+            result = data['chart']['result'][0]
+            meta = result.get('meta', {})
+            price = meta.get('regularMarketPrice')
+            prev  = meta.get('chartPreviousClose') or meta.get('previousClose')
+            if price is None or prev is None or prev == 0:
+                out[key] = None
+                continue
+            change_pct = ((price - prev) / prev) * 100
+            out[key] = {'value': round(price, 2), 'change_pct': round(change_pct, 2)}
+        except Exception as e:
+            print(f"[tickers] {symbol} failed: {e}")
+            out[key] = None
+    return jsonify(out)
 
 @app.route('/health')
 def health_check():

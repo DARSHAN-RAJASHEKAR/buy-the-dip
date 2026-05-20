@@ -1,1130 +1,287 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BuyTheDip · NSE Stock Scanner</title>
-    <link rel="icon" type="image/png" href="favicon.png?v=2" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <style>
-      *, *::before, *::after {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
-      :root {
-        --primary: #2563eb;
-        --primary-dark: #1d4ed8;
-        --primary-light: #eff6ff;
-        --success: #16a34a;
-        --danger: #dc2626;
-        --warning-bg: #fffbeb;
-        --warning-border: #fde68a;
-        --warning-text: #92400e;
-        --bg: #f3f4f6;
-        --surface: #ffffff;
-        --border: #e5e7eb;
-        --border-strong: #d1d5db;
-        --text-1: #111827;
-        --text-2: #6b7280;
-        --text-3: #9ca3af;
-        --radius: 8px;
-        --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-        --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
-      }
-
-      body {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        background: var(--bg);
-        color: var(--text-1);
-        min-height: 100vh;
-        font-size: 14px;
-        line-height: 1.5;
-      }
-
-      /* ── Top Bar ── */
-      .topbar {
-        background: var(--surface);
-        border-bottom: 1px solid var(--border);
-        height: 56px;
-        padding: 0 24px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        position: sticky;
-        top: 0;
-        z-index: 100;
-      }
-
-      .brand {
-        font-size: 15px;
-        font-weight: 700;
-        color: var(--text-1);
-        letter-spacing: -0.02em;
-      }
-
-      .brand-accent {
-        color: var(--primary);
-      }
-
-      .brand-divider {
-        color: var(--text-3);
-        font-weight: 400;
-        margin: 0 6px;
-      }
-
-      .brand-sub {
-        color: var(--text-2);
-        font-weight: 500;
-        font-size: 13px;
-      }
-
-      .topbar-right {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-      }
-
-      .status-badge {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 12px;
-        color: var(--text-2);
-      }
-
-      .status-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: var(--text-3);
-        flex-shrink: 0;
-      }
-
-      .status-dot.connected {
-        background: var(--success);
-      }
-
-      .status-dot.error {
-        background: var(--danger);
-      }
-
-      .last-updated {
-        font-size: 11px;
-        color: var(--text-3);
-      }
-
-      /* ── Disclaimer ── */
-      .disclaimer {
-        background: var(--warning-bg);
-        border-bottom: 1px solid var(--warning-border);
-        padding: 8px 24px;
-        font-size: 12px;
-        color: var(--warning-text);
-        text-align: center;
-      }
-
-      /* ── Main Layout ── */
-      .main {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 24px;
-      }
-
-      .page-header {
-        margin-bottom: 20px;
-      }
-
-      .page-title {
-        font-size: 20px;
-        font-weight: 700;
-        color: var(--text-1);
-        letter-spacing: -0.02em;
-        margin-bottom: 4px;
-      }
-
-      .page-subtitle {
-        font-size: 13px;
-        color: var(--text-2);
-      }
-
-      /* ── Controls Card ── */
-      .controls-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        padding: 20px;
-        margin-bottom: 16px;
-        box-shadow: var(--shadow-sm);
-      }
-
-      .section-label {
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: var(--text-2);
-        margin-bottom: 11px;
-      }
-
-      /* ── Market Tabs ── */
-      .market-tabs {
-        display: flex;
-        gap: 6px;
-        margin-bottom: 20px;
-      }
-
-      .market-tab {
-        padding: 7px 18px;
-        border-radius: 6px;
-        border: 1px solid var(--border);
-        background: var(--surface);
-        color: var(--text-2);
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.15s ease;
-        font-family: inherit;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-      }
-
-      .market-tab:hover {
-        border-color: var(--primary);
-        color: var(--primary);
-        background: var(--primary-light);
-      }
-
-      .market-tab.active {
-        background: var(--primary);
-        border-color: var(--primary);
-        color: white;
-      }
-
-      /* ── Universe Tabs ── */
-      .universe-tabs {
-        display: flex;
-        gap: 6px;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
-      }
-
-      .universe-tab {
-        padding: 5px 14px;
-        border-radius: 6px;
-        border: 1px solid var(--border);
-        background: var(--surface);
-        color: var(--text-2);
-        font-size: 13px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.15s ease;
-        font-family: inherit;
-      }
-
-      .universe-tab:hover {
-        border-color: var(--primary);
-        color: var(--primary);
-        background: var(--primary-light);
-      }
-
-      .universe-tab.active {
-        background: var(--primary);
-        border-color: var(--primary);
-        color: white;
-      }
-
-      .universe-tab .stock-count {
-        font-size: 11px;
-        opacity: 0.75;
-        margin-left: 4px;
-      }
-
-      /* ── Filters Row ── */
-      .filters-row {
-        display: flex;
-        gap: 12px;
-        align-items: flex-end;
-        flex-wrap: wrap;
-      }
-
-      .filter-item {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-      }
-
-      .filter-label {
-        font-size: 12px;
-        font-weight: 500;
-        color: var(--text-2);
-      }
-
-      .filter-input {
-        padding: 0 12px;
-        height: 34px;
-        border: 1px solid var(--border);
-        border-radius: 6px;
-        font-size: 13px;
-        color: var(--text-1);
-        background: var(--surface);
-        font-family: inherit;
-        transition: border-color 0.15s, box-shadow 0.15s;
-        min-width: 150px;
-      }
-
-      .filter-input:focus {
-        outline: none;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-      }
-
-      /* ── Scan Button ── */
-      .scan-btn {
-        height: 34px;
-        padding: 0 18px;
-        background: var(--primary);
-        color: white;
-        border: none;
-        border-radius: 6px;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        font-family: inherit;
-        transition: background 0.15s;
-        white-space: nowrap;
-        align-self: flex-end;
-      }
-
-      .scan-btn:hover:not(:disabled) {
-        background: var(--primary-dark);
-      }
-
-      .scan-btn:disabled {
-        background: var(--text-3);
-        cursor: not-allowed;
-      }
-
-      /* ── Results Card ── */
-      .results-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow-sm);
-        overflow: hidden;
-      }
-
-      /* ── Results Toolbar ── */
-      .results-toolbar {
-        padding: 14px 20px;
-        border-bottom: 1px solid var(--border);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-      }
-
-      .results-title {
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--text-1);
-      }
-
-      .export-btn {
-        height: 30px;
-        padding: 0 12px;
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 6px;
-        font-size: 12px;
-        font-weight: 500;
-        color: var(--text-2);
-        cursor: pointer;
-        font-family: inherit;
-        transition: all 0.15s;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-      }
-
-      .export-btn:hover {
-        border-color: var(--border-strong);
-        color: var(--text-1);
-      }
-
-      /* ── Stat Pills ── */
-      .stat-pills {
-        display: flex;
-        gap: 0;
-        border-bottom: 1px solid var(--border);
-        background: #fafafa;
-        overflow-x: auto;
-      }
-
-      .stat-pill {
-        padding: 10px 20px;
-        border-right: 1px solid var(--border);
-        white-space: nowrap;
-      }
-
-      .stat-pill:last-child {
-        border-right: none;
-      }
-
-      .stat-pill-label {
-        font-size: 11px;
-        color: var(--text-3);
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        font-weight: 600;
-        margin-bottom: 2px;
-      }
-
-      .stat-pill-value {
-        font-size: 14px;
-        font-weight: 700;
-        color: var(--text-1);
-      }
-
-      /* ── Table ── */
-      .table-wrapper {
-        overflow-x: auto;
-      }
-
-      .stock-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 13px;
-      }
-
-      .stock-table thead th {
-        padding: 10px 16px;
-        text-align: left;
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: var(--text-3);
-        border-bottom: 1px solid var(--border);
-        white-space: nowrap;
-        background: #fafafa;
-      }
-
-      .stock-table thead th.align-right {
-        text-align: right;
-      }
-
-      .stock-table tbody td {
-        padding: 12px 16px;
-        border-bottom: 1px solid #f3f4f6;
-        vertical-align: middle;
-      }
-
-      .stock-table tbody td.align-right {
-        text-align: right;
-      }
-
-      .stock-table tbody tr:last-child td {
-        border-bottom: none;
-      }
-
-      .stock-table tbody tr:hover td {
-        background: #f9fafb;
-      }
-
-      /* Stock symbol cell */
-      .stock-symbol {
-        font-weight: 700;
-        color: var(--text-1);
-        font-size: 14px;
-        font-variant-numeric: tabular-nums;
-      }
-
-      .stock-name {
-        font-size: 11px;
-        color: var(--text-3);
-        margin-top: 2px;
-      }
-
-      /* Sector badge */
-      .sector-badge {
-        display: inline-block;
-        padding: 2px 8px;
-        border-radius: 4px;
-        font-size: 11px;
-        font-weight: 500;
-        background: #f0f9ff;
-        color: #0369a1;
-        white-space: nowrap;
-      }
-
-      /* Price & change */
-      .price-value {
-        font-weight: 600;
-        color: var(--text-1);
-        font-variant-numeric: tabular-nums;
-      }
-
-      .change-negative {
-        color: var(--danger);
-        font-weight: 600;
-      }
-
-      .change-positive {
-        color: var(--success);
-        font-weight: 600;
-      }
-
-      .price-secondary {
-        color: var(--text-2);
-        font-variant-numeric: tabular-nums;
-      }
-
-      .volume-value {
-        color: var(--text-2);
-        font-variant-numeric: tabular-nums;
-      }
-
-      /* ── Loading ── */
-      .loading-state {
-        padding: 64px 24px;
-        text-align: center;
-      }
-
-      .spinner {
-        width: 28px;
-        height: 28px;
-        border: 2px solid var(--border);
-        border-top-color: var(--primary);
-        border-radius: 50%;
-        animation: spin 0.7s linear infinite;
-        margin: 0 auto 14px;
-      }
-
-      @keyframes spin {
-        to { transform: rotate(360deg); }
-      }
-
-      .loading-text {
-        font-size: 14px;
-        color: var(--text-2);
-      }
-
-      .loading-subtext {
-        font-size: 12px;
-        color: var(--text-3);
-        margin-top: 6px;
-      }
-
-      /* ── Empty / Error States ── */
-      .empty-state {
-        padding: 64px 24px;
-        text-align: center;
-      }
-
-      .empty-icon {
-        font-size: 36px;
-        margin-bottom: 14px;
-        line-height: 1;
-      }
-
-      .empty-title {
-        font-size: 15px;
-        font-weight: 600;
-        color: var(--text-1);
-        margin-bottom: 8px;
-      }
-
-      .empty-desc {
-        font-size: 13px;
-        color: var(--text-2);
-        max-width: 380px;
-        margin: 0 auto;
-        line-height: 1.6;
-      }
-
-      .feature-grid {
-        display: flex;
-        justify-content: center;
-        gap: 24px;
-        margin-top: 24px;
-        flex-wrap: wrap;
-      }
-
-      .feature-item {
-        font-size: 12px;
-        color: var(--text-2);
-        display: flex;
-        align-items: center;
-        gap: 6px;
-      }
-
-      .feature-item::before {
-        content: '✓';
-        color: var(--success);
-        font-weight: 700;
-      }
-
-      .error-state {
-        padding: 20px;
-      }
-
-      .error-box {
-        background: #fef2f2;
-        border: 1px solid #fecaca;
-        border-radius: var(--radius);
-        padding: 16px;
-      }
-
-      .error-box h4 {
-        color: #991b1b;
-        font-size: 14px;
-        font-weight: 600;
-        margin-bottom: 6px;
-      }
-
-      .error-box p {
-        color: #b91c1c;
-        font-size: 13px;
-        line-height: 1.5;
-      }
-
-      /* ── Responsive ── */
-      @media (max-width: 768px) {
-        .topbar {
-          padding: 0 16px;
-        }
-
-        .brand-sub {
-          display: none;
-        }
-
-        .main {
-          padding: 16px;
-        }
-
-        .filters-row {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 12px;
-        }
-
-        .filter-item {
-          width: 100%;
-        }
-
-        .filter-input {
-          width: 100%;
-          min-width: unset;
-        }
-
-        .scan-btn {
-          grid-column: 1 / -1;
-          width: 100%;
-          height: 40px;
-        }
-
-        .stat-pills {
-          flex-wrap: nowrap;
-          overflow-x: auto;
-        }
-
-        .last-updated {
-          display: none;
-        }
-      }
-    </style>
-  </head>
-  <body>
-
-    <!-- Top Bar -->
-    <header class="topbar">
-      <div class="brand">
-        Buy<span class="brand-accent">TheDip</span>
-      </div>
-      <div class="topbar-right">
-        <div class="status-badge">
-          <div class="status-dot" id="statusDot"></div>
-          <span id="statusText">Connecting...</span>
-        </div>
-        <div class="last-updated" id="lastUpdated"></div>
-      </div>
-    </header>
-
-    <!-- Disclaimer -->
-    <div class="disclaimer">
-      ⚠️ For educational and research purposes only. Not financial advice. Consult a qualified financial advisor before investing.
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BuyTheDip · Terminal</title>
+  <link rel="icon" type="image/png" href="favicon.png?v=2" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ── Status bar (always visible, fixed top) ─────────────────── -->
+  <div class="statusbar">
+    <div class="sb-left">
+      <span class="sb-brand">BuyTheDip</span>
+      <span class="sb-sep">|</span>
+      <span class="sb-status">
+        <span class="sb-status-dot" id="statusDot"></span>
+        <span id="statusText">CONNECTING</span>
+      </span>
     </div>
+    <div class="sb-right" id="sbTickers">
+      <span class="sb-tick" data-tick="nifty">
+        <span class="sb-tick-label">NIFTY 50</span>
+        <span class="sb-tick-val">—</span>
+        <span class="sb-tick-chg">—</span>
+      </span>
+      <span class="sb-tick" data-tick="dow">
+        <span class="sb-tick-label">DOW 30</span>
+        <span class="sb-tick-val">—</span>
+        <span class="sb-tick-chg">—</span>
+      </span>
+      <span class="sb-tick" data-tick="btc">
+        <span class="sb-tick-label">BTC/USD</span>
+        <span class="sb-tick-val">—</span>
+        <span class="sb-tick-chg">—</span>
+      </span>
+      <span class="sb-time" id="sbTime">—</span>
+    </div>
+  </div>
 
-    <!-- Main -->
-    <main class="main">
+  <!-- ── Disclaimer strip ────────────────────────────────────────── -->
+  <div class="disclaimer">
+    ⚠ For educational and research purposes only. Not financial advice. Data may be delayed.
+  </div>
 
-      <div class="page-header">
-        <h1 class="page-title">Market Dip Scanner</h1>
-        <p class="page-subtitle">Find dip opportunities in Indian stocks, US stocks, and crypto</p>
-      </div>
+  <!-- ── Main workspace ──────────────────────────────────────────── -->
+  <main class="workspace" id="workspace">
 
-      <!-- Controls -->
-      <div class="controls-card">
-        <div class="section-label">Market</div>
-        <div class="market-tabs">
-          <button class="market-tab active" onclick="selectMarket(this, 'india')">🇮🇳 India</button>
-          <button class="market-tab" onclick="selectMarket(this, 'us')">🇺🇸 United States</button>
-          <button class="market-tab" onclick="selectMarket(this, 'crypto')">₿ Crypto</button>
+    <!-- ── Left rail ── -->
+    <aside class="rail" id="rail">
+      <div class="rail-scroll">
+        <div class="rail-section">
+          <div class="rail-label">MARKETS</div>
+          <div class="market-list" id="marketList">
+            <button class="market-row active" data-market="india">
+              <span class="market-code">IN</span>
+              <span class="market-meta">
+                <span class="market-name">India · NSE</span>
+                <span class="market-sub">50/100/200/500</span>
+              </span>
+              <span class="market-pip">●</span>
+            </button>
+            <button class="market-row" data-market="us">
+              <span class="market-code">US</span>
+              <span class="market-meta">
+                <span class="market-name">United States</span>
+                <span class="market-sub">DOW · S&P · NASDAQ</span>
+              </span>
+              <span class="market-pip">●</span>
+            </button>
+            <button class="market-row" data-market="crypto">
+              <span class="market-code">CR</span>
+              <span class="market-meta">
+                <span class="market-name">Crypto</span>
+                <span class="market-sub">Binance · top 500</span>
+              </span>
+              <span class="market-pip">●</span>
+            </button>
+          </div>
         </div>
 
-        <div class="section-label">Stock Universe</div>
-        <div class="universe-tabs" id="universeTabs"></div>
+        <div class="rail-section">
+          <div class="rail-label">UNIVERSE</div>
+          <div class="universe-grid" id="universeGrid"></div>
+        </div>
 
-        <div class="section-label">Screening Filters</div>
-        <div class="filters-row">
-          <div class="filter-item">
-            <label class="filter-label" for="weeklyThreshold">Weekly Decline ≥ (%)</label>
-            <input
-              class="filter-input"
-              type="number"
-              id="weeklyThreshold"
-              value="5"
-              min="0"
-              max="100"
-              step="0.1"
-              placeholder="5.0"
-            />
+        <div class="rail-section">
+          <div class="rail-label">FILTERS</div>
+          <div class="filter-stack">
+            <label class="field">
+              <span class="field-label">WEEKLY DECLINE ≥</span>
+              <span class="field-input-wrap">
+                <input class="field-input" type="number" id="weeklyThreshold" value="5" min="0" max="100" step="0.1"/>
+                <span class="field-unit">%</span>
+              </span>
+            </label>
+            <label class="field">
+              <span class="field-label">MONTHLY DECLINE ≥</span>
+              <span class="field-input-wrap">
+                <input class="field-input" type="number" id="monthlyThreshold" value="10" min="0" max="100" step="0.1"/>
+                <span class="field-unit">%</span>
+              </span>
+            </label>
+            <label class="field">
+              <span class="field-label">MARKET CAP</span>
+              <select class="field-select" id="marketCapFilter">
+                <option value="all">ALL</option>
+                <option value="large">LARGE</option>
+                <option value="mid">MID</option>
+                <option value="small">SMALL</option>
+              </select>
+            </label>
+            <label class="field" id="sectorFilterItem">
+              <span class="field-label">SECTOR</span>
+              <select class="field-select" id="sectorFilter"></select>
+            </label>
           </div>
-          <div class="filter-item">
-            <label class="filter-label" for="monthlyThreshold">Monthly Decline ≥ (%)</label>
-            <input
-              class="filter-input"
-              type="number"
-              id="monthlyThreshold"
-              value="10"
-              min="0"
-              max="100"
-              step="0.1"
-              placeholder="10.0"
-            />
-          </div>
-          <div class="filter-item">
-            <label class="filter-label" for="marketCapFilter">Market Cap</label>
-            <select class="filter-input" id="marketCapFilter">
-              <option value="all">All Market Caps</option>
-              <option value="large">Large Cap</option>
-              <option value="mid">Mid Cap</option>
-              <option value="small">Small Cap</option>
-            </select>
-          </div>
-          <div class="filter-item" id="sectorFilterItem">
-            <label class="filter-label" for="sectorFilter">Sector</label>
-            <select class="filter-input" id="sectorFilter"></select>
-          </div>
-          <button class="scan-btn" id="scanBtn" onclick="scanStocks()">
-            <span id="buttonText">Scan Market</span>
-          </button>
         </div>
       </div>
 
-      <!-- Results -->
-      <div class="results-card">
+      <div class="rail-cta">
+        <button class="run-btn" id="scanBtn">
+          <span id="buttonText">RUN SCAN</span>
+          <span class="run-arrow">▸</span>
+        </button>
+        <div class="run-hint" id="runHint">Press <kbd>⌘</kbd>+<kbd>↵</kbd> to run</div>
+      </div>
+    </aside>
 
-        <!-- Initial state -->
-        <div id="initialMessage">
-          <div class="empty-state">
-            <div class="empty-icon">📈</div>
-            <div class="empty-title">Ready to scan</div>
-            <div class="empty-desc">Select a stock universe, configure your decline thresholds, and click Scan Market.</div>
-            <div class="feature-grid">
-              <span class="feature-item">Live NSE data</span>
-              <span class="feature-item">Weekly &amp; monthly declines</span>
-              <span class="feature-item">Sector &amp; market cap filters</span>
-              <span class="feature-item">CSV export</span>
+    <!-- ── Right canvas ── -->
+    <section class="canvas" id="canvas">
+
+      <!-- Canvas header -->
+      <header class="canvas-head">
+        <div class="canvas-crumbs">
+          <span>WORKSPACE</span>
+          <span class="crumb-sep">/</span>
+          <span>SCANNER</span>
+          <span class="crumb-sep">/</span>
+          <span class="crumb-active" id="crumbActive">CONFIGURE</span>
+        </div>
+        <div class="canvas-tools">
+          <button class="tool-btn" id="exportBtn" disabled title="Export CSV">↓ EXPORT CSV</button>
+        </div>
+      </header>
+
+      <!-- Mode 1: idle / initial -->
+      <div class="mode" id="modeIdle">
+        <div class="idle-wrap">
+          <div class="idle-eyebrow">▎ BUYTHEDIP</div>
+          <h1 class="idle-title">Find dips. <span class="idle-dim">Before the headlines do.</span></h1>
+          <p class="idle-lede">
+            Scan across NSE, US markets and crypto for stocks that dropped beyond your thresholds.
+          </p>
+
+          <div class="idle-steps">
+            <div class="step">
+              <div class="step-num">01</div>
+              <div class="step-title">Pick a market</div>
+              <div class="step-desc">NSE India, US markets or crypto. Choose the slice from the left rail.</div>
+            </div>
+            <div class="step">
+              <div class="step-num">02</div>
+              <div class="step-title">Set thresholds</div>
+              <div class="step-desc">How sharp a drop counts as a dip. Defaults are conservative — tighten or relax as you like.</div>
+            </div>
+            <div class="step">
+              <div class="step-num">03</div>
+              <div class="step-title">Read the signal</div>
+              <div class="step-desc">Ranked dips with volume, sector breakdown, sparklines, signal strength.</div>
+            </div>
+          </div>
+
+          <div class="idle-ctas">
+            <span class="idle-note">Set your filters in the left rail and press <b>Run Scan</b>.</span>
+            <span class="idle-note idle-note-end">NOT FINANCIAL ADVICE · DATA: YAHOO FINANCE · BINANCE</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mode 2: loading -->
+      <div class="mode" id="modeLoading" hidden>
+        <div class="loading-wrap">
+          <div class="loading-card">
+            <div class="loading-card-title">SCAN · <span id="loadUniverse">NIFTY 50</span></div>
+            <div class="loading-card-sub" id="loadFilters">−5% / 1W · −10% / 1M</div>
+            <div class="loading-rule"></div>
+            <div class="rail-label rail-label-tight">PROGRESS</div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-meta">
+              <span id="progressCount">0/0 fetched</span>
+              <span id="progressEta">—</span>
+            </div>
+          </div>
+          <div class="loading-stats">
+            <div class="lstat">
+              <div class="lstat-label">SCANNING</div>
+              <div class="lstat-value" id="lstatSymbols">0 / 0</div>
+            </div>
+            <div class="lstat">
+              <div class="lstat-label">MATCHES</div>
+              <div class="lstat-value lstat-amber" id="lstatMatches">0</div>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Loading -->
-        <div id="loadingDiv" style="display:none">
-          <div class="loading-state">
-            <div class="spinner"></div>
-            <div class="loading-text" id="loadingText">Scanning market...</div>
-            <div class="loading-subtext">Fetching price data and calculating declines</div>
+      <!-- Mode 3: results -->
+      <div class="mode" id="modeResults" hidden>
+        <div class="results-head">
+          <div class="results-head-left">
+            <h2 class="results-title"><span id="resultsCount">0</span> dip candidates</h2>
+            <div class="results-meta" id="resultsMeta">scanned 0 · 0s</div>
           </div>
         </div>
 
-        <!-- Results -->
-        <div id="resultsDiv" style="display:none">
-          <div class="results-toolbar">
-            <div class="results-title" id="resultsCount">0 stocks found</div>
-            <button class="export-btn" onclick="exportResults()">
-              ↓ Export CSV
-            </button>
-          </div>
+        <div class="stat-strip" id="statStrip"></div>
 
-          <div class="stat-pills" id="scanStats"></div>
+        <div class="results-body">
+          <aside class="results-side">
+            <div class="rail-label rail-label-tight">BREAKDOWN</div>
+            <div class="breakdown" id="breakdownList"></div>
 
-          <div class="table-wrapper">
-            <table class="stock-table">
+          </aside>
+
+          <div class="results-table-wrap">
+            <table class="rtable">
               <thead>
                 <tr>
-                  <th>Stock</th>
-                  <th>Sector</th>
-                  <th class="align-right">Price</th>
-                  <th class="align-right">1W Change</th>
-                  <th class="align-right">1M Change</th>
-                  <th class="align-right">Price 1W Ago</th>
-                  <th class="align-right">Price 1M Ago</th>
-                  <th class="align-right">Volume</th>
+                  <th class="th-num">#</th>
+                  <th class="th-sym sortable" data-sort="symbol">SYMBOL <span class="sort-icon"></span></th>
+                  <th class="th-sec sortable" data-sort="sector">SECTOR <span class="sort-icon"></span></th>
+                  <th class="th-r sortable" data-sort="price">PRICE <span class="sort-icon"></span></th>
+                  <th class="th-r sortable" data-sort="weekly">1W <span class="sort-icon"></span></th>
+                  <th class="th-r sortable" data-sort="monthly">1M <span class="sort-icon"></span></th>
+                  <th class="th-r sortable" data-sort="weekAgo">1W AGO <span class="sort-icon"></span></th>
+                  <th class="th-r sortable" data-sort="monthAgo">1M AGO <span class="sort-icon"></span></th>
+                  <th class="th-r sortable" data-sort="volume">VOL <span class="sort-icon"></span></th>
                 </tr>
               </thead>
-              <tbody id="stockGrid"></tbody>
+              <tbody id="resultsBody"></tbody>
             </table>
           </div>
         </div>
 
-        <!-- No results -->
-        <div id="noResultsDiv" style="display:none">
-          <div class="empty-state">
-            <div class="empty-icon">🔍</div>
-            <div class="empty-title">No matching stocks</div>
-            <div class="empty-desc">No stocks in the selected universe meet your screening criteria. Try lowering the thresholds or expanding the stock universe.</div>
-          </div>
+        <div class="results-foot">
+          <span id="footRefresh">DATA: <span id="footFeed">YH</span> · <span id="footTime">—</span></span>
         </div>
-
-        <!-- Error -->
-        <div id="errorDiv" style="display:none">
-          <div class="error-state">
-            <div class="error-box">
-              <h4>Connection Error</h4>
-              <p id="errorText">Unable to connect to market data service. Please check your internet connection and try again.</p>
-            </div>
-          </div>
-        </div>
-
       </div>
-    </main>
 
-    <script>
-      const getApiBase = () => {
-        const h = window.location.hostname;
-        return (h === "localhost" || h === "127.0.0.1")
-          ? "http://127.0.0.1:5001"
-          : "https://buythedip.onrender.com";
-      };
+      <!-- Mode 4: no results -->
+      <div class="mode" id="modeNoResults" hidden>
+        <div class="empty-wrap">
+          <div class="empty-glyph">⌀</div>
+          <div class="empty-title">NO MATCHES</div>
+          <div class="empty-desc">No symbols in this universe met your thresholds. Try lowering the decline floors, or expand to a larger universe.</div>
+          <button class="cta-ghost" id="emptyRetry">EDIT FILTERS</button>
+        </div>
+      </div>
 
-      const API_BASE = getApiBase();
-      let scanResults    = [];
-      let selectedMarket = "india";
-      let selectedUniverse = "nifty50";
-
-      // ── Config ──────────────────────────────────────────────────────────────
-
-      const UNIVERSE_CONFIG = {
-        india: [
-          { value: "nifty50",   label: "NIFTY 50",   count: "50"   },
-          { value: "nifty100",  label: "NIFTY 100",  count: "100"  },
-          { value: "nifty200",  label: "NIFTY 200",  count: "200"  },
-          { value: "nifty500",  label: "Extended",   count: "400+" },
-        ],
-        us: [
-          { value: "dow30",     label: "DOW 30",      count: "30"  },
-          { value: "sp100",     label: "S&P 100",     count: "100" },
-          { value: "nasdaq100", label: "NASDAQ 100",  count: "100" },
-          { value: "sp500",     label: "S&P 500",     count: "500" },
-        ],
-        crypto: [
-          { value: "top50",     label: "Top 50",      count: "50"  },
-          { value: "top100",    label: "Top 100",     count: "100" },
-          { value: "top200",    label: "Top 200",     count: "200" },
-          { value: "top500",    label: "Top 500",     count: "500" },
-        ],
-      };
-
-      const SECTOR_OPTIONS = {
-        india: [
-          { value: "all",          label: "All Sectors"             },
-          { value: "banking",      label: "Banking & Finance"       },
-          { value: "it",           label: "Information Technology"  },
-          { value: "healthcare",   label: "Healthcare & Pharma"     },
-          { value: "auto",         label: "Automotive"              },
-          { value: "fmcg",         label: "FMCG & Consumer"         },
-          { value: "energy",       label: "Energy & Power"          },
-          { value: "metals",       label: "Metals & Mining"         },
-          { value: "cement",       label: "Cement & Construction"   },
-        ],
-        us: [
-          { value: "all",          label: "All Sectors"             },
-          { value: "technology",   label: "Technology"              },
-          { value: "healthcare",   label: "Healthcare"              },
-          { value: "financials",   label: "Financials"              },
-          { value: "consumer",     label: "Consumer"                },
-          { value: "energy",       label: "Energy"                  },
-          { value: "industrials",  label: "Industrials"             },
-          { value: "communication",label: "Communication"           },
-          { value: "materials",    label: "Materials"               },
-          { value: "utilities",    label: "Utilities"               },
-          { value: "realestate",   label: "Real Estate"             },
-        ],
-        crypto: null, // no sector filter for crypto
-      };
-
-      const SECTOR_LABELS = {
-        // India
-        banking: "Banking", it: "IT", healthcare: "Healthcare", auto: "Auto",
-        fmcg: "FMCG", energy: "Energy", metals: "Metals", cement: "Cement",
-        consumer: "Consumer", telecom: "Telecom", infrastructure: "Infra",
-        capital_goods: "Capital Goods", realty: "Realty", chemicals: "Chemicals",
-        construction: "Construction", textiles: "Textiles", capital_goods: "Cap. Goods",
-        // US
-        technology: "Tech", financials: "Finance", industrials: "Industrial",
-        communication: "Comm.", materials: "Materials", utilities: "Utilities",
-        realestate: "Real Estate",
-        // Crypto
-        crypto: "Crypto",
-      };
-
-      const UNIVERSE_LABELS = {
-        // India
-        nifty50: "Nifty 50", nifty100: "Nifty 100", nifty200: "Nifty 200", nifty500: "Extended",
-        // US
-        dow30: "DOW 30", sp100: "S&P 100", nasdaq100: "NASDAQ 100", sp500: "S&P 500",
-        // Crypto
-        top50: "Top 50", top100: "Top 100", top200: "Top 200", top500: "Top 500",
-      };
-
-      const CURRENCY = { india: "₹", us: "$", crypto: "$" };
-
-      // ── Init ────────────────────────────────────────────────────────────────
-
-      document.addEventListener("DOMContentLoaded", () => {
-        renderUniverseTabs("india");
-        renderSectorFilter("india");
-        checkBackendConnection();
-      });
-
-      // ── Market / Universe selection ─────────────────────────────────────────
-
-      function selectMarket(el, market) {
-        document.querySelectorAll(".market-tab").forEach(t => t.classList.remove("active"));
-        el.classList.add("active");
-        selectedMarket = market;
-        renderUniverseTabs(market);
-        renderSectorFilter(market);
-      }
-
-      function renderUniverseTabs(market) {
-        const container = document.getElementById("universeTabs");
-        const options = UNIVERSE_CONFIG[market];
-        selectedUniverse = options[0].value;
-        container.innerHTML = options.map((opt, i) => `
-          <button
-            class="universe-tab${i === 0 ? " active" : ""}"
-            onclick="selectUniverse(this, '${opt.value}')"
-          >${opt.label} <span class="stock-count">${opt.count}</span></button>
-        `).join("");
-      }
-
-      function renderSectorFilter(market) {
-        const wrapper = document.getElementById("sectorFilterItem");
-        const select  = document.getElementById("sectorFilter");
-        const options = SECTOR_OPTIONS[market];
-        if (!options) {
-          wrapper.style.display = "none";
-          return;
-        }
-        wrapper.style.display = "";
-        select.innerHTML = options.map(o =>
-          `<option value="${o.value}">${o.label}</option>`
-        ).join("");
-      }
-
-      function selectUniverse(el, value) {
-        document.querySelectorAll(".universe-tab").forEach(t => t.classList.remove("active"));
-        el.classList.add("active");
-        selectedUniverse = value;
-      }
-
-      // ── Backend connection ──────────────────────────────────────────────────
-
-      async function checkBackendConnection() {
-        try {
-          const res = await fetch(`${API_BASE}/health`, { headers: { Accept: "application/json" } });
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const data = await res.json();
-          if (data.status === "healthy") updateStatus(true, "Connected");
-        } catch {
-          updateStatus(false, "Service unavailable");
-        }
-      }
-
-      function updateStatus(connected, message) {
-        const dot  = document.getElementById("statusDot");
-        const text = document.getElementById("statusText");
-        dot.classList.remove("connected", "error");
-        dot.classList.add(connected ? "connected" : "error");
-        text.textContent = message;
-      }
-
-      // ── Scan ────────────────────────────────────────────────────────────────
-
-      async function scanStocks() {
-        const btn          = document.getElementById("scanBtn");
-        const btnText      = document.getElementById("buttonText");
-        const loadingDiv   = document.getElementById("loadingDiv");
-        const resultsDiv   = document.getElementById("resultsDiv");
-        const errorDiv     = document.getElementById("errorDiv");
-        const noResultsDiv = document.getElementById("noResultsDiv");
-        const initialMsg   = document.getElementById("initialMessage");
-        const loadingText  = document.getElementById("loadingText");
-
-        btn.disabled = true;
-        btnText.textContent = "Scanning...";
-        loadingDiv.style.display   = "block";
-        resultsDiv.style.display   = "none";
-        errorDiv.style.display     = "none";
-        noResultsDiv.style.display = "none";
-        initialMsg.style.display   = "none";
-
-        const universeLabel = UNIVERSE_LABELS[selectedUniverse] || selectedUniverse;
-        const marketLabel   = { india: "Indian", us: "US", crypto: "Crypto" }[selectedMarket];
-        loadingText.textContent = `Scanning ${marketLabel} market — ${universeLabel}...`;
-
-        try {
-          const body = {
-            market:           selectedMarket,
-            stockUniverse:    selectedUniverse,
-            weeklyThreshold:  parseFloat(document.getElementById("weeklyThreshold").value),
-            monthlyThreshold: parseFloat(document.getElementById("monthlyThreshold").value),
-            marketCapFilter:  document.getElementById("marketCapFilter").value,
-            sectorFilter:     SECTOR_OPTIONS[selectedMarket]
-                                ? document.getElementById("sectorFilter").value
-                                : "all",
-          };
-
-          const res = await fetch(`${API_BASE}/scan`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Accept: "application/json" },
-            body: JSON.stringify(body),
-          });
-
-          if (!res.ok) throw new Error(`Scan failed: ${res.status} ${res.statusText}`);
-
-          const data = await res.json();
-          scanResults = data.results;
-          loadingDiv.style.display = "none";
-
-          if (scanResults.length > 0) {
-            displayResults(scanResults, data);
-          } else {
-            noResultsDiv.style.display = "block";
-          }
-
-          const now = new Date();
-          document.getElementById("lastUpdated").textContent = "";
-
-        } catch (err) {
-          loadingDiv.style.display = "none";
-          errorDiv.style.display   = "block";
-          document.getElementById("errorText").textContent = err.message;
-        } finally {
-          btn.disabled = false;
-          btnText.textContent = "Scan Market";
-        }
-      }
-
-      // ── Display results ──────────────────────────────────────────────────────
-
-      function displayResults(results, scanData) {
-        document.getElementById("resultsCount").textContent =
-          `${results.length} ${selectedMarket === "crypto" ? "coin" : "stock"}${results.length !== 1 ? "s" : ""} found`;
-
-        document.getElementById("scanStats").innerHTML = `
-          <div class="stat-pill">
-            <div class="stat-pill-label">Market</div>
-            <div class="stat-pill-value">${{ india: "India 🇮🇳", us: "US 🇺🇸", crypto: "Crypto ₿" }[selectedMarket]}</div>
+      <!-- Mode 5: error -->
+      <div class="mode" id="modeError" hidden>
+        <div class="empty-wrap empty-error">
+          <div class="empty-glyph empty-glyph-err">!</div>
+          <div class="empty-title">CONNECTION ERROR</div>
+          <div class="empty-desc" id="errorText">Couldn't reach the scanner service.</div>
+          <div class="error-actions">
+            <button class="cta-primary" id="errorRetry">RETRY</button>
           </div>
-          <div class="stat-pill">
-            <div class="stat-pill-label">Universe</div>
-            <div class="stat-pill-value">${UNIVERSE_LABELS[scanData.stock_universe] || scanData.stock_universe || "—"}</div>
-          </div>
-          <div class="stat-pill">
-            <div class="stat-pill-label">Scanned</div>
-            <div class="stat-pill-value">${scanData.universe_size || "—"}</div>
-          </div>
-          <div class="stat-pill">
-            <div class="stat-pill-label">Success Rate</div>
-            <div class="stat-pill-value">${scanData.success_rate || "—"}</div>
-          </div>
-          <div class="stat-pill">
-            <div class="stat-pill-label">Opportunities</div>
-            <div class="stat-pill-value">${results.length}</div>
-          </div>
-        `;
+        </div>
+      </div>
 
-        document.getElementById("stockGrid").innerHTML = results.map(renderStockRow).join("");
-        document.getElementById("resultsDiv").style.display = "block";
-      }
+    </section>
+  </main>
 
-      function renderStockRow(stock) {
-        const weekly  = parseFloat(stock.weeklyChange);
-        const monthly = parseFloat(stock.monthlyChange);
-        const symbol  = stock.symbol.replace(".NS", "");
-        const sector  = SECTOR_LABELS[stock.sector] || stock.sector || "—";
-        const cur     = CURRENCY[selectedMarket];
-        const locale  = selectedMarket === "india" ? "en-IN" : "en-US";
-        const volume  = typeof stock.volume === "number"
-          ? stock.volume.toLocaleString(locale)
-          : stock.volume || "—";
+  <!-- Mobile filter sheet (collapsed; shown on small screens) -->
+  <button class="m-filter-fab" id="mFilterFab" hidden>FILTERS</button>
 
-        return `
-          <tr>
-            <td>
-              <div class="stock-symbol">${symbol}</div>
-              <div class="stock-name">${stock.name}</div>
-            </td>
-            <td><span class="sector-badge">${sector}</span></td>
-            <td class="align-right price-value">${cur}${stock.currentPrice}</td>
-            <td class="align-right ${weekly  < 0 ? "change-negative" : "change-positive"}">${stock.weeklyChange}%</td>
-            <td class="align-right ${monthly < 0 ? "change-negative" : "change-positive"}">${stock.monthlyChange}%</td>
-            <td class="align-right price-secondary">${cur}${stock.priceOneWeekAgo}</td>
-            <td class="align-right price-secondary">${cur}${stock.priceOneMonthAgo}</td>
-            <td class="align-right volume-value">${volume}</td>
-          </tr>
-        `;
-      }
-
-      // ── Export ───────────────────────────────────────────────────────────────
-
-      function exportResults() {
-        if (!scanResults.length) return;
-        const cur = CURRENCY[selectedMarket];
-        const headers = [
-          "Symbol", "Name", `Current Price (${cur})`,
-          "Weekly Change (%)", "Monthly Change (%)",
-          `Price 1W Ago (${cur})`, `Price 1M Ago (${cur})`,
-          "Volume", "Sector", "Market Cap", "Source",
-        ];
-        const rows = scanResults.map(s => [
-          s.symbol, `"${s.name}"`,
-          s.currentPrice, s.weeklyChange, s.monthlyChange,
-          s.priceOneWeekAgo, s.priceOneMonthAgo,
-          typeof s.volume === "number" ? s.volume : `"${s.volume || "N/A"}"`,
-          s.sector || "—", s.marketCap || "—", s.source || "—",
-        ].join(","));
-
-        const csv  = [headers.join(","), ...rows].join("\n");
-        const blob = new Blob([csv], { type: "text/csv" });
-        const url  = URL.createObjectURL(blob);
-        const a    = document.createElement("a");
-        a.href     = url;
-        a.download = `dips_${selectedMarket}_${new Date().toISOString().split("T")[0]}.csv`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }
-    </script>
-  </body>
+  <script src="app.js"></script>
+</body>
 </html>
