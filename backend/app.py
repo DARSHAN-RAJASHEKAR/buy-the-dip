@@ -8,6 +8,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 app = Flask(__name__)
 
+_BINANCE_BASE = "https://api.binance.com/api/v3"
+_STABLE_SYMBOLS = {'USDT', 'BUSD', 'USDC', 'DAI', 'TUSD', 'USDP', 'FDUSD', 'UST', 'USDS'}
+
 # Production CORS configuration
 if os.environ.get('RENDER') or os.environ.get('PORT'):
     # Production on Render
@@ -1162,67 +1165,117 @@ def get_us_universe(universe_type):
 
 # ── CoinGecko Crypto Scanner ─────────────────────────────────────────────────
 
-def scan_crypto_via_coingecko(universe_size, weekly_threshold, monthly_threshold, market_cap_filter='all'):
-    """Scan crypto via CoinGecko public API — free, no key, allows display"""
-    print(f"\n[CRYPTO] Scanning top {universe_size} coins via CoinGecko...")
+def _get_binance_kline_changes(symbol: str) -> tuple:
+    """Return (weekly_pct, monthly_pct, current_price) for a Binance USDT pair using daily klines."""
+    try:
+        resp = requests.get(
+            f"{_BINANCE_BASE}/klines",
+            params={'symbol': symbol, 'interval': '1d', 'limit': 32},
+            timeout=15,
+        )
+        if resp.status_code != 200:
+            return None, None, None
+        klines = resp.json()
+        if len(klines) < 8:
+            return None, None, None
+        current       = float(klines[-1][4])          # latest close
+        price_7d_ago  = float(klines[-8][1])           # open of candle 7 days back
+        price_30d_ago = float(klines[-31][1]) if len(klines) >= 31 else float(klines[0][1])
+        weekly  = (current - price_7d_ago)  / price_7d_ago  * 100
+        monthly = (current - price_30d_ago) / price_30d_ago * 100
+        return round(weekly, 2), round(monthly, 2), current
+    except Exception as e:
+        print(f"[CRYPTO] klines error for {symbol}: {e}")
+        return None, None, None
+
+
+def _fetch_binance_coins(universe_size: int) -> list:
+    """Fetch top N crypto coins from Binance by 24h USD volume, with 7d/30d changes from klines."""
+    print(f"[CRYPTO] Fetching top {universe_size} USDT pairs from Binance...")
+    try:
+        resp = requests.get(f"{_BINANCE_BASE}/ticker/24hr", timeout=30)
+        if resp.status_code != 200:
+            print(f"[CRYPTO] Binance ticker returned {resp.status_code}")
+            return []
+        tickers = resp.json()
+    except Exception as e:
+        print(f"[CRYPTO] Binance ticker request failed: {e}")
+        return []
+
+    usdt = [
+        t for t in tickers
+        if t['symbol'].endswith('USDT') and t['symbol'][:-4] not in _STABLE_SYMBOLS
+    ]
+    usdt.sort(key=lambda x: float(x.get('quoteVolume', 0)), reverse=True)
+    top_tickers = usdt[:universe_size]
+
+    print(f"[CRYPTO] Got {len(top_tickers)} pairs, fetching klines in parallel...")
+
+    def build_coin(ticker):
+        symbol    = ticker['symbol']
+        base      = symbol[:-4]
+        quote_vol = float(ticker.get('quoteVolume', 0))
+        cap_label = 'large' if quote_vol > 100_000_000 else 'mid' if quote_vol > 10_000_000 else 'small'
+        weekly, monthly, current = _get_binance_kline_changes(symbol)
+        if weekly is None:
+            return None
+        return {
+            'symbol':    base,
+            'name':      base,
+            '_weekly':   weekly,
+            '_monthly':  monthly,
+            '_current':  current,
+            '_quoteVol': quote_vol,
+            '_capLabel': cap_label,
+        }
+
+    coins = []
+    with ThreadPoolExecutor(max_workers=15) as executor:
+        futures = {executor.submit(build_coin, t): t for t in top_tickers}
+        for future in as_completed(futures):
+            result = future.result()
+            if result:
+                coins.append(result)
+
+    print(f"[CRYPTO] Fetched {len(coins)} coins")
+    return coins
+
+
+def scan_crypto_via_binance(universe_size, weekly_threshold, monthly_threshold, market_cap_filter='all'):
+    """Scan crypto via Binance public API — no key needed, 1200 req/min limit."""
+    coins = _fetch_binance_coins(universe_size)
+    if not coins:
+        print("[CRYPTO] No coin data (Binance fetch failed)")
+        return []
+
     results = []
-    per_page = min(universe_size, 250)
-    pages_needed = (universe_size + per_page - 1) // per_page
+    for coin in coins:
+        weekly  = coin['_weekly']
+        monthly = coin['_monthly']
+        current = coin['_current']
+        cap     = coin['_capLabel']
 
-    for page in range(1, pages_needed + 1):
-        try:
-            url = "https://api.coingecko.com/api/v3/coins/markets"
-            params = {
-                'vs_currency': 'usd',
-                'order': 'market_cap_desc',
-                'per_page': per_page,
-                'page': page,
-                'price_change_percentage': '7d,30d',
-                'sparkline': False,
-            }
-            resp = requests.get(url, params=params, timeout=30)
-            if resp.status_code != 200:
-                print(f"[CRYPTO] CoinGecko returned {resp.status_code}")
-                break
-            coins = resp.json()
-        except Exception as e:
-            print(f"[CRYPTO] CoinGecko request failed: {e}")
-            break
+        if market_cap_filter != 'all' and cap != market_cap_filter:
+            continue
+        if weekly <= -weekly_threshold and monthly <= -monthly_threshold:
+            w_factor = 1 + weekly  / 100
+            m_factor = 1 + monthly / 100
+            results.append({
+                'symbol':          coin['symbol'],
+                'name':            coin['name'],
+                'currentPrice':    round(current, 6),
+                'weeklyChange':    weekly,
+                'monthlyChange':   monthly,
+                'priceOneWeekAgo': round(current / w_factor, 6) if w_factor else 0,
+                'priceOneMonthAgo':round(current / m_factor, 6) if m_factor else 0,
+                'volume':          int(coin['_quoteVol']),
+                'marketCap':       cap,
+                'sector':          'crypto',
+                'source':          'binance',
+            })
+            print(f"[MATCH] {coin['symbol']} W:{weekly:.1f}% M:{monthly:.1f}%")
 
-        for coin in coins:
-            weekly  = coin.get('price_change_percentage_7d_in_currency') or 0
-            monthly = coin.get('price_change_percentage_30d_in_currency') or 0
-            mktcap  = coin.get('market_cap') or 0
-
-            # Market cap filter
-            if market_cap_filter == 'large' and mktcap <= 10_000_000_000:
-                continue
-            if market_cap_filter == 'mid' and not (1_000_000_000 < mktcap <= 10_000_000_000):
-                continue
-            if market_cap_filter == 'small' and mktcap >= 1_000_000_000:
-                continue
-
-            if weekly <= -weekly_threshold and monthly <= -monthly_threshold:
-                current   = coin.get('current_price') or 0
-                w_factor  = 1 + weekly  / 100
-                m_factor  = 1 + monthly / 100
-                cap_label = 'large' if mktcap > 10_000_000_000 else 'mid' if mktcap > 1_000_000_000 else 'small'
-
-                results.append({
-                    'symbol':          coin['symbol'].upper(),
-                    'name':            coin['name'],
-                    'currentPrice':    round(current, 6),
-                    'weeklyChange':    round(weekly, 2),
-                    'monthlyChange':   round(monthly, 2),
-                    'priceOneWeekAgo': round(current / w_factor, 6) if w_factor else 0,
-                    'priceOneMonthAgo':round(current / m_factor, 6) if m_factor else 0,
-                    'volume':          int(coin.get('total_volume') or 0),
-                    'marketCap':       cap_label,
-                    'sector':          'crypto',
-                    'source':          'coingecko',
-                })
-                print(f"[MATCH] {coin['symbol'].upper()} W:{weekly:.1f}% M:{monthly:.1f}%")
-
+    results.sort(key=lambda x: x['weeklyChange'])
     print(f"[CRYPTO] Done — {len(results)} coins matched criteria")
     return results
 
@@ -1439,11 +1492,11 @@ def scan_stocks():
         print(f"[CRITERIA] Weekly ≤ -{weekly_threshold}%, Monthly ≤ -{monthly_threshold}%")
         print(f"[FILTERS] Market Cap = {market_cap_filter}, Sector = {sector_filter}")
 
-        # ── Crypto: use CoinGecko ──
+        # ── Crypto: use Binance ──
         if market == 'crypto':
             size_map = {'top50': 50, 'top100': 100, 'top200': 200, 'top500': 500}
             universe_size = size_map.get(stock_universe, 100)
-            results = scan_crypto_via_coingecko(universe_size, weekly_threshold, monthly_threshold, market_cap_filter)
+            results = scan_crypto_via_binance(universe_size, weekly_threshold, monthly_threshold, market_cap_filter)
             return jsonify({
                 'results':              results,
                 'total_matches':        len(results),
@@ -1455,7 +1508,7 @@ def scan_stocks():
                 'failed_count':         0,
                 'success_rate':         '100%',
                 'market':               'crypto',
-                'data_source':          'CoinGecko (free, no API key)',
+                'data_source':          'Binance (free, no API key)',
                 'timestamp':            datetime.now().isoformat(),
                 'message':              f'Scanned top {universe_size} coins: {len(results)} dip opportunities found',
             })
