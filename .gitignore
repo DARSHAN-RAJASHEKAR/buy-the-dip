@@ -149,3 +149,6 @@ temp/
 local_test.py
 test_*.py
 debug.log
+
+# Claude
+.claude/
