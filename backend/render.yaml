@@ -11,3 +11,5 @@ services:
         value: true
       - key: FLASK_ENV
         value: production
+      - key: BINANCE_API_KEY
+        sync: false

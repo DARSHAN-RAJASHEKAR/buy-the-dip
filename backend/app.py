@@ -11,6 +11,9 @@ app = Flask(__name__)
 _BINANCE_BASE = "https://api.binance.com/api/v3"
 _STABLE_SYMBOLS = {'USDT', 'BUSD', 'USDC', 'DAI', 'TUSD', 'USDP', 'FDUSD', 'UST', 'USDS'}
 
+def _binance_headers() -> dict:
+    return {'X-MBX-APIKEY': os.environ.get('BINANCE_API_KEY', '')}
+
 # Production CORS configuration
 if os.environ.get('RENDER') or os.environ.get('PORT'):
     # Production on Render
@@ -1171,6 +1174,7 @@ def _get_binance_kline_changes(symbol: str) -> tuple:
         resp = requests.get(
             f"{_BINANCE_BASE}/klines",
             params={'symbol': symbol, 'interval': '1d', 'limit': 32},
+            headers=_binance_headers(),
             timeout=15,
         )
         if resp.status_code != 200:
@@ -1193,7 +1197,7 @@ def _fetch_binance_coins(universe_size: int) -> list:
     """Fetch top N crypto coins from Binance by 24h USD volume, with 7d/30d changes from klines."""
     print(f"[CRYPTO] Fetching top {universe_size} USDT pairs from Binance...")
     try:
-        resp = requests.get(f"{_BINANCE_BASE}/ticker/24hr", timeout=30)
+        resp = requests.get(f"{_BINANCE_BASE}/ticker/24hr", headers=_binance_headers(), timeout=30)
         if resp.status_code != 200:
             print(f"[CRYPTO] Binance ticker returned {resp.status_code}")
             return []
@@ -1439,7 +1443,6 @@ def home():
     return jsonify({
         'message': 'Clean Stock Scanner - Yahoo Finance Only',
         'status': 'running',
-        'version': '6.0 - Simplified & Clean',
         'policy': 'Real data only from Yahoo Finance',
         'universes': ['nifty50', 'nifty100', 'nifty200', 'nifty500'],
         'data_source': 'Yahoo Finance (Real market data)',
@@ -1508,7 +1511,7 @@ def scan_stocks():
                 'failed_count':         0,
                 'success_rate':         '100%',
                 'market':               'crypto',
-                'data_source':          'Binance (free, no API key)',
+                'data_source':          'Binance',
                 'timestamp':            datetime.now().isoformat(),
                 'message':              f'Scanned top {universe_size} coins: {len(results)} dip opportunities found',
             })
@@ -1621,7 +1624,6 @@ def health_check():
     return jsonify({
         'status': 'healthy',
         'timestamp': datetime.now().isoformat(),
-        'version': '6.0',
         'features': ['Clean & Simple', 'Yahoo Finance Only', 'Static Curated Lists'],
         'data_source': 'Yahoo Finance API',
         'stock_source': 'Static Lists (50-450+ stocks)',
