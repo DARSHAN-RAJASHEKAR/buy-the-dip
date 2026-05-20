@@ -1373,11 +1373,15 @@ def fetch_yahoo_finance_data(symbol):
                 valid_data = [(ts, close) for ts, close in zip(timestamps, closes) if close is not None]
                 
                 if len(valid_data) >= 7:  # Need at least a week of data
-                    current_price = valid_data[-1][1]  # Latest price
+                    # Use regularMarketPrice for today's actual close.
+                    # valid_data[-1] can be yesterday's close when today's
+                    # candle hasn't settled in the chart yet.
+                    current_price = result.get('meta', {}).get('regularMarketPrice') or valid_data[-1][1]
                     
-                    # Calculate dates for comparison
-                    week_ago_ts = timestamps[-1] - (7 * 24 * 60 * 60)  # 7 days in seconds
-                    month_ago_ts = timestamps[-1] - (30 * 24 * 60 * 60)  # 30 days in seconds
+                    # Calculate dates for comparison from now, not from last chart timestamp
+                    now_ts = int(time.time())
+                    week_ago_ts = now_ts - (7 * 24 * 60 * 60)
+                    month_ago_ts = now_ts - (30 * 24 * 60 * 60)
                     
                     # Find closest prices to our target dates
                     week_price = None
@@ -1763,6 +1767,7 @@ def tickers():
     """
     symbols = [
         ('nifty', '^NSEI'),
+        ('sp500', '^GSPC'),
         ('dow',   '^DJI'),
         ('btc',   'BTC-USD'),
     ]
@@ -1781,12 +1786,33 @@ def tickers():
             result = data['chart']['result'][0]
             meta = result.get('meta', {})
             price = meta.get('regularMarketPrice')
-            prev  = meta.get('chartPreviousClose') or meta.get('previousClose')
-            if price is None or prev is None or prev == 0:
+
+            # Determine prev close correctly regardless of whether today's
+            # candle is settled or still None in the chart.
+            # If the last close in the chart is None → today not settled yet,
+            # so last non-null IS yesterday's close.
+            # If the last close is not None → today is settled, use second-to-last.
+            closes = result.get('indicators', {}).get('quote', [{}])[0].get('close', [])
+            non_null_closes = [c for c in closes if c is not None]
+
+            if price is None or len(non_null_closes) < 2:
+                out[key] = None
+                continue
+
+            last_raw = closes[-1] if closes else None
+            if last_raw is None:
+                # Today's candle not settled — last non-null is yesterday
+                prev = non_null_closes[-1]
+            else:
+                # Today's candle is settled — second-to-last is yesterday
+                prev = non_null_closes[-2]
+
+            if prev == 0:
                 out[key] = None
                 continue
             change_pct = ((price - prev) / prev) * 100
-            out[key] = {'value': round(price, 2), 'change_pct': round(change_pct, 2)}
+            change_abs = price - prev
+            out[key] = {'value': round(price, 2), 'change_pct': round(change_pct, 2), 'change_abs': round(change_abs, 2)}
         except Exception as e:
             print(f"[tickers] {symbol} failed: {e}")
             out[key] = None

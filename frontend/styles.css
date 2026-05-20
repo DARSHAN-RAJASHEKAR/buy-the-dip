@@ -1268,6 +1268,7 @@ body {
     display: none;
   }
 
+  .sb-right .sb-tick[data-tick="sp500"],
   .sb-right .sb-tick[data-tick="dow"] {
     display: none;
   }

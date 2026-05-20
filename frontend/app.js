@@ -193,10 +193,12 @@
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       const d = await r.json();
       paintTickerFromApi('nifty', d.nifty, { fractionDigits: 2 });
+      paintTickerFromApi('sp500', d.sp500, { fractionDigits: 2 });
       paintTickerFromApi('dow',   d.dow,   { fractionDigits: 2 });
       paintTickerFromApi('btc',   d.btc,   { prefix: '$', fractionDigits: 0 });
     } catch (e) {
       paintTickerErr('nifty');
+      paintTickerErr('sp500');
       paintTickerErr('dow');
       paintTickerErr('btc');
     }
@@ -209,10 +211,16 @@
       minimumFractionDigits: opts.fractionDigits || 0,
       maximumFractionDigits: opts.fractionDigits || 0,
     });
-    paintTicker(id, valueStr, payload.change_pct);
+    const absStr = typeof payload.change_abs === 'number'
+      ? (payload.change_abs >= 0 ? '+' : '') + payload.change_abs.toLocaleString('en-US', {
+          minimumFractionDigits: opts.fractionDigits || 0,
+          maximumFractionDigits: opts.fractionDigits || 0,
+        })
+      : null;
+    paintTicker(id, valueStr, payload.change_pct, absStr);
   }
 
-  function paintTicker(id, valueStr, changePct) {
+  function paintTicker(id, valueStr, changePct, absStr) {
     const root = document.querySelector(`.sb-tick[data-tick="${id}"]`);
     if (!root) return;
     const valEl = root.querySelector('.sb-tick-val');
@@ -221,7 +229,8 @@
     chgEl.classList.remove('up', 'dn');
     if (typeof changePct === 'number' && isFinite(changePct)) {
       const sign = changePct >= 0 ? '+' : '';
-      chgEl.textContent = `${sign}${changePct.toFixed(2)}%`;
+      const absPart = absStr ? `${absStr} ` : '';
+      chgEl.textContent = `${absPart}(${sign}${changePct.toFixed(2)}%)`;
       chgEl.classList.add(changePct >= 0 ? 'up' : 'dn');
     } else {
       chgEl.textContent = '—';
