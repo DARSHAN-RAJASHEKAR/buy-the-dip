@@ -645,7 +645,6 @@
     <header class="topbar">
       <div class="brand">
         Buy<span class="brand-accent">TheDip</span>
-        <span class="brand-divider">·</span>
         <span class="brand-sub">NSE Scanner</span>
       </div>
       <div class="topbar-right">
@@ -955,7 +954,7 @@
           const res = await fetch(`${API_BASE}/health`, { headers: { Accept: "application/json" } });
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           const data = await res.json();
-          if (data.status === "healthy") updateStatus(true, `Connected · v${data.version || "1.0"}`);
+          if (data.status === "healthy") updateStatus(true, "Connected");
         } catch {
           updateStatus(false, "Service unavailable");
         }
@@ -1024,8 +1023,7 @@
           }
 
           const now = new Date();
-          document.getElementById("lastUpdated").textContent =
-            `Updated ${now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+          document.getElementById("lastUpdated").textContent = "";
 
         } catch (err) {
           loadingDiv.style.display = "none";
