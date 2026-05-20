@@ -12,7 +12,8 @@ _BINANCE_BASE = "https://api.binance.com/api/v3"
 _STABLE_SYMBOLS = {'USDT', 'BUSD', 'USDC', 'DAI', 'TUSD', 'USDP', 'FDUSD', 'UST', 'USDS'}
 
 def _binance_headers() -> dict:
-    return {'X-MBX-APIKEY': os.environ.get('BINANCE_API_KEY', '')}
+    key = os.environ.get('BINANCE_API_KEY')
+    return {'X-MBX-APIKEY': key} if key else {}
 
 # Production CORS configuration
 if os.environ.get('RENDER') or os.environ.get('PORT'):
@@ -1646,8 +1647,8 @@ def test_stock(symbol):
     })
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    debug = not (os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('PORT'))
-    environment = "Production (Railway)" if (os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('PORT')) else "Development"
+    port = int(os.environ.get('PORT', 5001))
+    debug = not (os.environ.get('RENDER') or os.environ.get('PORT'))
+    environment = "Production (Render)" if (os.environ.get('RENDER') or os.environ.get('PORT')) else "Development"
     
     app.run(debug=debug, host='0.0.0.0', port=port)
